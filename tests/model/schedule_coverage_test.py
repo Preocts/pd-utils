@@ -15,6 +15,7 @@ def test_model() -> None:
     dct = model.as_dict()
 
     assert model.coverage == 97.9
+    assert dct["coverage"] == 97.9
     assert model.name == "Preocts Coverage Gaps"
     assert model.pd_id == "PG3MDI8"
-    assert dct["coverage"] == 97.9
+    assert len(model.entries) == 15
