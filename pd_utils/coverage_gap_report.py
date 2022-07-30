@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import csv
 import logging
+from typing import Any
 
 import httpx
 
-from pd_utils.model import ScheduleCoverage as Coverage
+from pd_utils.model import EscalationRuleCoverage as EscCoverage
+from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import DateTool
 from pd_utils.util import RuntimeInit
 
@@ -31,9 +33,8 @@ class CoverageGapReport:
         self,
         token: str,
         *,
-        max_query_limit: int = 1,
+        max_query_limit: int = 100,
         look_ahead_days: int = 14,
-        report_filename: str | None = None,
     ) -> None:
         """
         Required: PagerDuty API v2 token with read access.
@@ -41,11 +42,12 @@ class CoverageGapReport:
         Args:
             max_query_limit: Number of objects to request at once from PD (max: 100)
             look_ahead_days: Number of days to look ahead on schedule (default: 14)
-            report_filename: Defaults to "schedule_gap_reportYYYY-MM-DD.csv"
         """
+        self._since = DateTool.utcnow_isotime()
+        self._until = DateTool.add_offset(self._since, days=look_ahead_days)
         self._max_query_limit = max_query_limit
-        self._look_ahead_days = look_ahead_days
-        self._report_filename = report_filename
+        self._schedule_map: dict[str, SchCoverage] = {}
+        self._escalation_map: dict[str, EscCoverage] = {}
 
         headers = {
             "Accept": "application/vnd.pagerduty+json;version=2",
@@ -61,27 +63,86 @@ class CoverageGapReport:
         Raises:
             QueryError
         """
-        sch_ids = self._get_all_schedule_ids()
+        self._map_schedule_coverages(self._get_all_schedule_ids())
+        self._map_escalation_coverages(self._get_all_escalations())
+        self._hydrate_escalation_coverage_flags()
 
-        coverage_map = self._get_schedule_coverages(sch_ids)
+        self._save_schedule_report()
+        self._save_escalation_report()
 
-        self._save_schedule_report(list(coverage_map.values()))
+    def get_schedule_coverage(self, schedule_id: str) -> SchCoverage | None:
+        """Get ScheduleCoverage from PagerDuty with specific schedule id."""
+        schobj: SchCoverage | None = None
+        params = {
+            "since": self._since,
+            "until": self._until,
+            "time_zone": "Etc/UTC",
+        }
+        resp = self._http.get(f"{self.base_url}/schedules/{schedule_id}", params=params)
 
-    def _save_schedule_report(self, coverages: list[Coverage]) -> None:
+        if resp.is_success:
+            schobj = SchCoverage.build_from(resp.json())
+        else:
+            self.log.error("Error fetching schedule %s - %s", schedule_id, resp.text)
+
+        return schobj
+
+    def _get_all_escalations(self) -> list[dict[str, Any]]:
+        """Pull all escalation polcies from PagerDuty."""
+        more = True
+        params = {"offset": 0, "limit": self._max_query_limit}
+        eps: list[dict[str, Any]] = []
+
+        while more:
+            self.log.debug("List escalation policies: %s", params)
+            resp = self._http.get(f"{self.base_url}/escalation_policies", params=params)
+
+            if not resp.is_success:
+                self.log.error("Unexpected error: %s", resp.text)
+                raise QueryError("Unexpected error")
+
+            eps.extend(resp.json()["escalation_policies"])
+
+            params["offset"] += self._max_query_limit
+            more = resp.json()["more"]
+
+        self.log.info("Discovered %d escalation policies.", len(eps))
+
+        return eps
+
+    def _save_schedule_report(self) -> None:
         """Save report to file."""
-        if not self._report_filename:
-            now = DateTool.utcnow_isotime().split("T")[0]
-            self._report_filename = f"schedule_gap_report{now}.csv"
+        now = DateTool.utcnow_isotime().split("T")[0]
+        filename = f"schedule_gap_report{now}.csv"
 
-        self.log.info("Saving %d lines to %s", len(coverages), self._report_filename)
+        coverages = list(self._schedule_map.values())
+
+        self.log.info("Saving %d lines to %s", len(coverages), filename)
 
         cov_dcts = [cov.as_dict() for cov in coverages]
         fields = list(cov_dcts[0].keys())
 
-        with open(self._report_filename, "w") as outfile:
+        with open(filename, "w") as outfile:
             dct_writer = csv.DictWriter(outfile, fieldnames=fields)
             dct_writer.writeheader()
             dct_writer.writerows(cov_dcts)
+
+    def _save_escalation_report(self) -> None:
+        """Save report to file."""
+        now = DateTool.utcnow_isotime().split("T")[0]
+        filename = f"escalation_rule_gap_report{now}.csv"
+
+        ep_rules = list(self._escalation_map.values())
+
+        self.log.info("Saving %d lines to %s", len(ep_rules), filename)
+
+        esc_dcts = [esc.as_dict() for esc in ep_rules]
+        fields = list(esc_dcts[0].keys())
+
+        with open(filename, "w") as outfile:
+            dict_writer = csv.DictWriter(outfile, fieldnames=fields)
+            dict_writer.writeheader()
+            dict_writer.writerows(esc_dcts)
 
     def _get_all_schedule_ids(self) -> set[str]:
         """Get all unique schedule IDs."""
@@ -105,43 +166,59 @@ class CoverageGapReport:
 
         return set(sch_ids)
 
-    def _get_schedule_coverages(self, schedule_ids: set[str]) -> dict[str, Coverage]:
+    def _map_schedule_coverages(self, schedule_ids: set[str]) -> None:
         """Map scheduleId:ScheduleCoverage object, pulling detailed object from PD."""
-        schedule_map: dict[str, Coverage] = {}
-
         self.log.info("Pulling %d schedules for coverage.", len(schedule_ids))
 
         for idx, sch_id in enumerate(schedule_ids, 1):
             self.log.debug("Pulling %s (%d of %d)", sch_id, idx, len(schedule_ids))
 
             coverage = self.get_schedule_coverage(sch_id)
-            schedule_map.update({sch_id: coverage} if coverage else {})
+            self._schedule_map.update({sch_id: coverage} if coverage else {})
 
-        return schedule_map
+    def _map_escalation_coverages(self, escalations: list[dict[str, Any]]) -> None:
+        """Map scheduleId:EscCoverage object, from pulled escalations."""
+        self.log.info("Mapping %d escalations for coverage", len(escalations))
 
-    def get_schedule_coverage(self, schedule_id: str) -> Coverage | None:
-        """Get ScheduleCoverage from PagerDuty with specific schedule id."""
-        schobj: Coverage | None = None
-        now = DateTool.utcnow_isotime()
-        params = {
-            "since": now,
-            "until": DateTool.add_offset(now, days=self._look_ahead_days),
-            "time_zone": "Etc/UTC",
-        }
-        resp = self._http.get(f"{self.base_url}/schedules/{schedule_id}", params=params)
+        for escalation in escalations:
+            ep_coverage = EscCoverage.build_from(escalation)
+            rule_map = {f"{ep.policy_id}-{ep.rule_index}": ep for ep in ep_coverage}
+            self._escalation_map.update(rule_map)
 
-        if resp.is_success:
-            schobj = Coverage.build_from(resp.json())
-        else:
-            self.log.error("Error fetching schedule %s - %s", schedule_id, resp.text)
+        self.log.info("%d total objects converted", len(self._escalation_map))
 
-        return schobj
+    def _hydrate_escalation_coverage_flags(self) -> None:
+        """Test all mapped escalations and set each `has_gap` flag for rules."""
+        # NOTE: Schedules should be mapped before this is called
+
+        for ep_rule in self._escalation_map.values():
+            times = self._extract_entries(ep_rule.rule_target_ids)
+            ep_rule.is_fully_covered = DateTool.is_covered(
+                time_slots=times,
+                range_start=self._since,
+                range_stop=self._until,
+            )
+
+    def _extract_entries(self, sch_ids: tuple[str, ...]) -> list[tuple[str, str]]:
+        """Extract all timestamp entries from given schedules"""
+        entries: list[tuple[str, str]] = []
+        schedules = [self._schedule_map[k] for k in sch_ids if k in self._schedule_map]
+        for schedule in schedules:
+            entries.extend(list(schedule.entries))
+        return entries
 
 
 def main() -> int:
     """CLI entry."""
+    runtime.add_argument(
+        flag="--look-ahead",
+        default="14",
+        help_="Number of days to look ahead for gaps, default 14",
+    )
     args = runtime.parse_args()
-    CoverageGapReport(token=args.token).run_reports()
+    client = CoverageGapReport(token=args.token, look_ahead_days=int(args.look_ahead))
+    client.run_reports()
+
     return 0
 
 
