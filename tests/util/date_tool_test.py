@@ -39,3 +39,30 @@ def test_add_offset() -> None:
     result = DateTool.add_offset(MOCK_ISO, days=1, hours=1, minutes=1, seconds=1)
 
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("time_slots", "expected"),
+    (
+        (
+            [
+                ("2022-07-29T04:18:19Z", "2022-07-29T12:00:00Z"),
+                ("2022-07-30T00:00:00Z", "2022-07-30T12:00:00Z"),
+                ("2022-07-29T12:30:00Z", "2022-07-30T00:00:00Z"),
+                ("2022-07-30T12:30:00Z", "2022-07-31T00:00:00Z"),
+            ],
+            False,
+        ),
+        (
+            [
+                ("2022-07-29T04:18:19Z", "2022-07-29T12:00:00Z"),
+                ("2022-07-30T00:00:00Z", "2022-07-30T12:00:00Z"),
+                ("2022-07-29T12:00:00Z", "2022-07-30T00:00:00Z"),
+                ("2022-07-30T12:00:00Z", "2022-07-31T00:00:00Z"),
+            ],
+            True,
+        ),
+    ),
+)
+def test_is_covered(time_slots: list[tuple[str, str]], expected: bool) -> None:
+    assert DateTool.is_covered(time_slots) is expected
