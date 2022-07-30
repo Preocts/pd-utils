@@ -10,8 +10,7 @@ from httpx import Response
 from pd_utils.coverage_gap_report import CoverageGapReport
 from pd_utils.coverage_gap_report import QueryError
 from pd_utils.model import ScheduleCoverage
-from pd_utils.model.escalation_coverage import _Rule
-from pd_utils.model.escalation_coverage import EscalationCoverage
+from pd_utils.model.escalation_rule_coverage import EscalationRuleCoverage
 
 SCHEDULES_RESP = Path("tests/fixture/cov_gap/schedule_list.json").read_text()
 EXPECTED_IDS = {"PG3MDI8", "P4TPEME"}
@@ -32,46 +31,34 @@ def search() -> CoverageGapReport:
 def mapped_search(search: CoverageGapReport) -> CoverageGapReport:
     search._escalation_map = {
         # Expected to have gaps in coverage
-        "mock1": EscalationCoverage(
-            ep_id="P46S1RA",
-            name="Mind the gap",
-            html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
-            rules=[
-                _Rule(
-                    index=1,
-                    target_names=("Morning shift", "Late shift gap"),
-                    target_ids=("sch1", "sch2"),
-                    has_gaps=None,
-                )
-            ],
+        "mock1": EscalationRuleCoverage(
+            policy_name="Mind the gap",
+            policy_id="P46S1RA",
+            policy_html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
+            rule_index=1,
+            rule_target_names=("Morning shift", "Late shift gap"),
+            rule_target_ids=("sch1", "sch2"),
+            is_fully_covered=None,
         ),
         # Expected to be fully covered
-        "mock2": EscalationCoverage(
-            ep_id="P46S1RA",
-            name="No gap",
-            html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
-            rules=[
-                _Rule(
-                    index=1,
-                    target_names=("Morning shift", "Late shift"),
-                    target_ids=("sch1", "sch3"),
-                    has_gaps=None,
-                )
-            ],
+        "mock2": EscalationRuleCoverage(
+            policy_id="P46S1RA",
+            policy_name="No gap",
+            policy_html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
+            rule_index=1,
+            rule_target_names=("Morning shift", "Late shift"),
+            rule_target_ids=("sch1", "sch3"),
+            is_fully_covered=None,
         ),
         # Expected to have gap in range
-        "mock3": EscalationCoverage(
-            ep_id="P46S1RA",
-            name="No gap",
-            html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
-            rules=[
-                _Rule(
-                    index=1,
-                    target_names=("Morning shift", "Late Shorted"),
-                    target_ids=("sch1", "sch4"),
-                    has_gaps=None,
-                )
-            ],
+        "mock3": EscalationRuleCoverage(
+            policy_id="P46S1RA",
+            policy_name="No gap",
+            policy_html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
+            rule_index=1,
+            rule_target_names=("Morning shift", "Late Shorted"),
+            rule_target_ids=("sch1", "sch4"),
+            is_fully_covered=None,
         ),
     }
     search._schedule_map = {
@@ -192,12 +179,12 @@ def test_map_escalation_coverages(search: CoverageGapReport) -> None:
 
     search._map_escalation_coverages(mock_eps)
 
-    assert len(search._escalation_map) == 1
+    assert len(search._escalation_map) == 4
 
 
 def test_hydrate_escalation_coverage_flags(mapped_search: CoverageGapReport) -> None:
     mapped_search._hydrate_escalation_coverage_flags()
 
-    assert mapped_search._escalation_map["mock1"].rules[0].has_gaps is False
-    assert mapped_search._escalation_map["mock2"].rules[0].has_gaps is True
-    assert mapped_search._escalation_map["mock3"].rules[0].has_gaps is False
+    assert mapped_search._escalation_map["mock1"].is_fully_covered is False
+    assert mapped_search._escalation_map["mock2"].is_fully_covered is True
+    assert mapped_search._escalation_map["mock3"].is_fully_covered is False

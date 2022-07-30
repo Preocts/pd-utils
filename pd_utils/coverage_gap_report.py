@@ -9,7 +9,7 @@ from typing import Any
 
 import httpx
 
-from pd_utils.model import EscalationCoverage as EscCoverage
+from pd_utils.model import EscalationRuleCoverage as EscCoverage
 from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import DateTool
 from pd_utils.util import RuntimeInit
@@ -130,13 +130,13 @@ class CoverageGapReport:
     def _save_escalation_report(self) -> None:
         """Save report to file."""
         now = DateTool.utcnow_isotime().split("T")[0]
-        filename = f"escalation_gap_report{now}.csv"
+        filename = f"escalation_rule_gap_report{now}.csv"
 
-        escalations = list(self._escalation_map.values())
+        ep_rules = list(self._escalation_map.values())
 
-        self.log.info("Saving %d lines to %s", len(escalations), filename)
+        self.log.info("Saving %d lines to %s", len(ep_rules), filename)
 
-        esc_dcts = [esc.as_dict() for esc in escalations]
+        esc_dcts = [esc.as_dict() for esc in ep_rules]
         fields = list(esc_dcts[0].keys())
 
         with open(filename, "w") as outfile:
@@ -182,7 +182,8 @@ class CoverageGapReport:
 
         for escalation in escalations:
             ep_coverage = EscCoverage.build_from(escalation)
-            self._escalation_map[ep_coverage.ep_id] = ep_coverage
+            rule_map = {f"{ep.policy_id}-{ep.rule_index}": ep for ep in ep_coverage}
+            self._escalation_map.update(rule_map)
 
         self.log.info("%d total objects converted", len(self._escalation_map))
 
@@ -190,10 +191,13 @@ class CoverageGapReport:
         """Test all mapped escalations and set each `has_gap` flag for rules."""
         # NOTE: Schedules should be mapped before this is called
 
-        for ep_coverage in self._escalation_map.values():
-            for rule in ep_coverage.rules:
-                times = self._extract_entries(rule.target_ids)
-                rule.has_gaps = DateTool.is_covered(times, self._since, self._until)
+        for ep_rule in self._escalation_map.values():
+            times = self._extract_entries(ep_rule.rule_target_ids)
+            ep_rule.is_fully_covered = DateTool.is_covered(
+                time_slots=times,
+                range_start=self._since,
+                range_stop=self._until,
+            )
 
     def _extract_entries(self, sch_ids: tuple[str, ...]) -> list[tuple[str, str]]:
         """Extract all timestamp entries from given schedules"""
