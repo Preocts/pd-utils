@@ -13,6 +13,7 @@ class EscalationRuleCoverage:
     rule_index: int
     rule_target_names: tuple[str, ...]
     rule_target_ids: tuple[str, ...]
+    is_fully_covered: bool | None = None
 
     @classmethod
     def build_from(cls, resp: dict[str, Any]) -> list[EscalationRuleCoverage]:
