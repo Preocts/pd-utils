@@ -1,0 +1,145 @@
+[
+    {
+        "escalation_policies": [
+            {
+                "id": "P46S1RA",
+                "type": "escalation_policy",
+                "summary": "Mind the gap",
+                "self": "https://api.pagerduty.com/escalation_policies/P46S1RA",
+                "html_url": "https://preocts.pagerduty.com/escalation_policies/P46S1RA",
+                "name": "Mind the gap",
+                "escalation_rules": [
+                    {
+                        "id": "P5RXGTL",
+                        "escalation_delay_in_minutes": 30,
+                        "targets": [
+                            {
+                                "id": "PQ1AJP1",
+                                "type": "schedule_reference",
+                                "summary": "Morning shift",
+                                "self": "https://api.pagerduty.com/schedules/PQ1AJP1",
+                                "html_url": "https://preocts.pagerduty.com/schedules/PQ1AJP1"
+                            },
+                            {
+                                "id": "PA82FR2",
+                                "type": "schedule_reference",
+                                "summary": "Late shift gap",
+                                "self": "https://api.pagerduty.com/schedules/PA82FR2",
+                                "html_url": "https://preocts.pagerduty.com/schedules/PA82FR2"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "PFQHIDJ",
+                        "escalation_delay_in_minutes": 30,
+                        "targets": [
+                            {
+                                "id": "PQ1AJP1",
+                                "type": "schedule_reference",
+                                "summary": "Morning shift",
+                                "self": "https://api.pagerduty.com/schedules/PQ1AJP1",
+                                "html_url": "https://preocts.pagerduty.com/schedules/PQ1AJP1"
+                            },
+                            {
+                                "id": "PRZTRI8",
+                                "type": "schedule_reference",
+                                "summary": "Late shift no gap",
+                                "self": "https://api.pagerduty.com/schedules/PRZTRI8",
+                                "html_url": "https://preocts.pagerduty.com/schedules/PRZTRI8"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "PBEWI1W",
+                        "escalation_delay_in_minutes": 30,
+                        "targets": [
+                            {
+                                "id": "P4TPEME",
+                                "type": "schedule_reference",
+                                "summary": "Preocts Full Coverage",
+                                "self": "https://api.pagerduty.com/schedules/P4TPEME",
+                                "html_url": "https://preocts.pagerduty.com/schedules/P4TPEME"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "PY58HP6",
+                        "escalation_delay_in_minutes": 30,
+                        "targets": [
+                            {
+                                "id": "PG3MDI8",
+                                "type": "schedule_reference",
+                                "summary": "Preocts Coverage Gaps",
+                                "self": "https://api.pagerduty.com/schedules/PG3MDI8",
+                                "html_url": "https://preocts.pagerduty.com/schedules/PG3MDI8"
+                            }
+                        ]
+                    }
+                ],
+                "services": [
+                    {
+                        "id": "P4CVCNH",
+                        "type": "service_reference",
+                        "summary": "test",
+                        "self": "https://api.pagerduty.com/services/P4CVCNH",
+                        "html_url": "https://preocts.pagerduty.com/service-directory/P4CVCNH"
+                    }
+                ],
+                "num_loops": 0,
+                "teams": [],
+                "description": "",
+                "on_call_handoff_notifications": "if_has_services",
+                "privilege": null
+            }
+        ],
+        "limit": 1,
+        "offset": 0,
+        "more": true,
+        "total": null
+    },
+    {
+        "escalation_policies": [
+            {
+                "id": "P46S1RA",
+                "type": "escalation_policy",
+                "summary": "Totally safe",
+                "self": "https://api.pagerduty.com/escalation_policies/P46S1RA",
+                "html_url": "https://preocts.pagerduty.com/escalation_policies/P46S1RA",
+                "name": "Totally safe",
+                "escalation_rules": [
+                    {
+                        "id": "PBEWI1W",
+                        "escalation_delay_in_minutes": 30,
+                        "targets": [
+                            {
+                                "id": "P4TPEME",
+                                "type": "schedule_reference",
+                                "summary": "Preocts Full Coverage",
+                                "self": "https://api.pagerduty.com/schedules/P4TPEME",
+                                "html_url": "https://preocts.pagerduty.com/schedules/P4TPEME"
+                            }
+                        ]
+                    }
+                ],
+                "services": [
+                    {
+                        "id": "P4CVCNH",
+                        "type": "service_reference",
+                        "summary": "test",
+                        "self": "https://api.pagerduty.com/services/P4CVCNH",
+                        "html_url": "https://preocts.pagerduty.com/service-directory/P4CVCNH"
+                    }
+                ],
+                "num_loops": 0,
+                "teams": [],
+                "description": "",
+                "on_call_handoff_notifications": "if_has_services",
+                "privilege": null
+            }
+        ],
+        "limit": 1,
+        "offset": 1,
+        "more": false,
+        "total": null
+    }
+]
