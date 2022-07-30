@@ -12,7 +12,7 @@ from pd_utils.model import ScheduleCoverage as Coverage
 from pd_utils.util import DateTool
 from pd_utils.util import RuntimeInit
 
-runtime = RuntimeInit("schedule-gap-report")
+runtime = RuntimeInit("coverage-gap-report")
 runtime.init_secrets()
 runtime.init_logging()
 

@@ -63,12 +63,6 @@ class RuntimeInit:
     def parse_args(self, args: Sequence[str] | None = None) -> argparse.Namespace:
         """Parse command line arguments."""
         self.parser.add_argument(
-            "--logging-level",
-            help="Logging level (default: $LOGGING_LEVEL | INFO)",
-            choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-            default=self.secrets.get("LOGGING_LEVEL", "INFO"),
-        )
-        self.parser.add_argument(
             "--token",
             help="PagerDuty API Token (default: $PAGERDUTY_TOKEN)",
             default=self.secrets.get("PAGERDUTY_TOKEN", ""),
@@ -77,6 +71,12 @@ class RuntimeInit:
             "--email",
             help="PagerDuty Email (default: $PAGERDUTY_EMAIL)",
             default=self.secrets.get("PAGERDUTY_EMAIL", ""),
+        )
+        self.parser.add_argument(
+            "--logging-level",
+            help="Logging level (default: $LOGGING_LEVEL | INFO)",
+            choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+            default=self.secrets.get("LOGGING_LEVEL", "INFO"),
         )
 
         parsed = (

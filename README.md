@@ -2,9 +2,9 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Preocts/pagerduty-utils/main.svg)](https://results.pre-commit.ci/latest/github/Preocts/pagerduty-utils/main)
-[![Python package](https://github.com/Preocts/pagerduty-utils/actions/workflows/python-tests.yml/badge.svg?branch=main)](https://github.com/Preocts/pagerduty-utils/actions/workflows/python-tests.yml)
-[![codecov](https://codecov.io/gh/Preocts/pagerduty-utils/branch/main/graph/badge.svg?token=ABlYTJMwLN)](https://codecov.io/gh/Preocts/pagerduty-utils)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Preocts/pd-utils/main.svg)](https://results.pre-commit.ci/latest/github/Preocts/pd-utils/main)
+[![Python package](https://github.com/Preocts/pd-utils/actions/workflows/python-tests.yml/badge.svg?branch=main)](https://github.com/Preocts/pd-utils/actions/workflows/python-tests.yml)
+[![codecov](https://codecov.io/gh/Preocts/pd-utils/branch/main/graph/badge.svg?token=ABlYTJMwLN)](https://codecov.io/gh/Preocts/pd-utils)
 
 A growing collection of small CLI scripts I've written for managing a PagerDuty
 instance.
@@ -21,7 +21,7 @@ Install scripts: Replace `@X.X.X` with the release number desired or exclude to
 pull `main` branch.
 
 ```bash
-pip install git+https://github.com/Preocts/pagerduty-utils@X.X.X
+pip install git+https://github.com/Preocts/pd-utils@X.X.X
 ```
 
 ---
@@ -49,16 +49,16 @@ All scripts accept the `--logging-level` flag which defaults to `INFO`.
 Identify schedules that are lacking 100% coverage.
 
 ```shell
-usage: coverage-gap-report [-h] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--token TOKEN] [--email EMAIL]
+usage: coverage-gap-report [-h] [--token TOKEN] [--email EMAIL] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
 
 Pagerduty command line utilities.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                        Logging level (default: $LOGGING_LEVEL | INFO)
   --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
   --email EMAIL         PagerDuty Email (default: $PAGERDUTY_EMAIL)
+  --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Logging level (default: $LOGGING_LEVEL | INFO)
 
 See: https://github.com/Preocts/pagerduty-utils
 ```
@@ -100,7 +100,7 @@ Clone this repo and enter root directory of repo:
 
 ```console
 $ git clone https://github.com/Preocts/paderduty-utils
-$ cd pagerduty-utils
+$ cd pd-utils
 ```
 
 Create the `venv`:
