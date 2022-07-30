@@ -74,8 +74,10 @@ class DateTool:
             range_start: PD timestamp of start for range to check
             range_stop: PD timesteamp of stop for range to check
         """
+        # Sort by endtime in reverse
+        sorted_slots = sorted(time_slots, key=lambda x: x[1], reverse=True)
         # Sort by starttime in reverse
-        sorted_slots = sorted(time_slots, key=lambda x: x[0], reverse=True)
+        sorted_slots = sorted(sorted_slots, key=lambda x: x[0], reverse=True)
 
         if not DateTool._is_gapless(sorted_slots.copy()):
             return False
