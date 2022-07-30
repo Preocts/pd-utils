@@ -21,6 +21,13 @@
                                 "html_url": "https://preocts.pagerduty.com/schedules/PQ1AJP1"
                             },
                             {
+                                "id": "PQ1AJP1",
+                                "type": "user_reference",
+                                "summary": "Fake user reference",
+                                "self": "https://api.pagerduty.com/schedules/PQ1AJP1",
+                                "html_url": "https://preocts.pagerduty.com/schedules/PQ1AJP1"
+                            },
+                            {
                                 "id": "PA82FR2",
                                 "type": "schedule_reference",
                                 "summary": "Late shift gap",

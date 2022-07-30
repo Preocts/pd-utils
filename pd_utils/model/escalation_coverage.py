@@ -25,11 +25,21 @@ class EscalationCoverage:
         """Build object from PagerDuty escalation_policies response."""
         rules: list[_Rule] = []
         for idx, rule in enumerate(resp["escalation_rules"] or [], 1):
+            names = [
+                t["summary"]
+                for t in rule["targets"] or []
+                if t["type"] == "schedule_reference"
+            ]
+            targets = [
+                t["id"]
+                for t in rule["targets"] or []
+                if t["type"] == "schedule_reference"
+            ]
             rules.append(
                 _Rule(
                     index=idx,
-                    target_names=tuple(t["summary"] for t in rule["targets"] or []),
-                    target_ids=tuple(t["id"] for t in rule["targets"] or []),
+                    target_names=tuple(names),
+                    target_ids=tuple(targets),
                 )
             )
 
