@@ -9,6 +9,9 @@ from httpx import Response
 
 from pd_utils.coverage_gap_report import CoverageGapReport
 from pd_utils.coverage_gap_report import QueryError
+from pd_utils.model import ScheduleCoverage
+from pd_utils.model.escalation_coverage import _Rule
+from pd_utils.model.escalation_coverage import EscalationCoverage
 
 SCHEDULES_RESP = Path("tests/fixture/cov_gap/schedule_list.json").read_text()
 EXPECTED_IDS = {"PG3MDI8", "P4TPEME"}
@@ -23,6 +26,104 @@ EP_EXPECTED_COUNT = 2
 @pytest.fixture
 def search() -> CoverageGapReport:
     return CoverageGapReport("mock", max_query_limit=1, look_ahead_days=14)
+
+
+@pytest.fixture
+def mapped_search(search: CoverageGapReport) -> CoverageGapReport:
+    search._escalation_map = {
+        # Expected to have gaps in coverage
+        "mock1": EscalationCoverage(
+            ep_id="P46S1RA",
+            name="Mind the gap",
+            html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
+            rules=[
+                _Rule(
+                    index=1,
+                    target_names=("Morning shift", "Late shift gap"),
+                    target_ids=("sch1", "sch2"),
+                    has_gaps=None,
+                )
+            ],
+        ),
+        # Expected to be fully covered
+        "mock2": EscalationCoverage(
+            ep_id="P46S1RA",
+            name="No gap",
+            html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
+            rules=[
+                _Rule(
+                    index=1,
+                    target_names=("Morning shift", "Late shift"),
+                    target_ids=("sch1", "sch3"),
+                    has_gaps=None,
+                )
+            ],
+        ),
+        # Expected to have gap in range
+        "mock3": EscalationCoverage(
+            ep_id="P46S1RA",
+            name="No gap",
+            html_url="https://preocts.pagerduty.com/escalation_policies/P46S1RA",
+            rules=[
+                _Rule(
+                    index=1,
+                    target_names=("Morning shift", "Late Shorted"),
+                    target_ids=("sch1", "sch4"),
+                    has_gaps=None,
+                )
+            ],
+        ),
+    }
+    search._schedule_map = {
+        "sch1": ScheduleCoverage(
+            "sc1",
+            "Mornings",
+            "...",
+            56.3,
+            (
+                ("2022-07-29T04:18:19Z", "2022-07-29T12:00:00Z"),
+                ("2022-07-30T00:00:00Z", "2022-07-30T12:00:00Z"),
+                ("2022-07-31T00:00:00Z", "2022-07-31T12:00:00Z"),
+            ),
+        ),
+        "sch2": ScheduleCoverage(
+            "sc2",
+            "Late shift gap",
+            "...",
+            56.3,
+            (
+                ("2022-07-29T04:18:19Z", "2022-07-30T00:00:00Z"),
+                ("2022-07-30T12:30:00Z", "2022-07-31T00:00:00Z"),
+                ("2022-07-31T12:30:00Z", "2022-08-01T00:00:00Z"),
+            ),
+        ),
+        "sch3": ScheduleCoverage(
+            "sc3",
+            "Late shift",
+            "...",
+            56.3,
+            (
+                ("2022-07-29T04:18:19Z", "2022-07-30T00:00:00Z"),
+                ("2022-07-30T12:00:00Z", "2022-07-31T00:00:00Z"),
+                ("2022-07-31T12:00:00Z", "2022-08-01T00:00:00Z"),
+            ),
+        ),
+        "sch4": ScheduleCoverage(
+            "sc4",
+            "Late shift",
+            "...",
+            56.3,
+            (
+                ("2022-07-29T04:18:19Z", "2022-07-30T00:00:00Z"),
+                ("2022-07-30T12:00:00Z", "2022-07-31T00:00:00Z"),
+                ("2022-07-31T12:00:00Z", "2022-07-31T23:00:00Z"),
+            ),
+        ),
+    }
+    search._since = "2022-07-29T04:18:19Z"
+    search._until = "2022-08-01T00:00:00Z"
+
+    return search
 
 
 def test_get_all_schedule_ids(search: CoverageGapReport) -> None:

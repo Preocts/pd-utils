@@ -45,8 +45,9 @@ class CoverageGapReport:
             look_ahead_days: Number of days to look ahead on schedule (default: 14)
             report_filename: Defaults to "schedule_gap_reportYYYY-MM-DD.csv"
         """
+        self._since = DateTool.utcnow_isotime()
+        self._until = DateTool.add_offset(self._since, days=look_ahead_days)
         self._max_query_limit = max_query_limit
-        self._look_ahead_days = look_ahead_days
         self._report_filename = report_filename
         self._schedule_map: dict[str, SchCoverage] = {}
         self._escalation_map: dict[str, EscCoverage] = {}
@@ -72,10 +73,9 @@ class CoverageGapReport:
     def get_schedule_coverage(self, schedule_id: str) -> SchCoverage | None:
         """Get ScheduleCoverage from PagerDuty with specific schedule id."""
         schobj: SchCoverage | None = None
-        now = DateTool.utcnow_isotime()
         params = {
-            "since": now,
-            "until": DateTool.add_offset(now, days=self._look_ahead_days),
+            "since": self._since,
+            "until": self._until,
             "time_zone": "Etc/UTC",
         }
         resp = self._http.get(f"{self.base_url}/schedules/{schedule_id}", params=params)
@@ -109,10 +109,6 @@ class CoverageGapReport:
         self.log.info("Discovered %d escalation policies.", len(eps))
 
         return eps
-
-    # def get_escalation_coverages(self) -> list[EscCoverage]:
-    #     """Get EscalationCoverage for all PagerDuty escalation policies."""
-    #     coverages: list[EscCoverage] = []
 
     def _save_schedule_report(self) -> None:
         """Save report to file."""
@@ -174,11 +170,21 @@ class CoverageGapReport:
 
         self.log.info("%d total objects converted", len(self._escalation_map))
 
+    def _hydrate_escalation_coverage_flags(self) -> None:
+        """Test all mapped escalations and set each `has_gap` flag for rules."""
+        # NOTE: Schedules should be mapped before this is called
+
+        for ep_coverage in self._escalation_map.values():
+            for rule in ep_coverage.rules:
+                ...
+
 
 def main() -> int:
     """CLI entry."""
     args = runtime.parse_args()
-    CoverageGapReport(token=args.token).run_reports()
+    client = CoverageGapReport(token=args.token)
+    client.run_reports()
+
     return 0
 
 
