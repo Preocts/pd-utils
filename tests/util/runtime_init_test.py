@@ -12,7 +12,7 @@ ENV_FILE = "tests/fixture/mockenv"
 
 @pytest.fixture
 def runtime() -> RuntimeInit:
-    return RuntimeInit()
+    return RuntimeInit("testing")
 
 
 def test_init_secrets(runtime: RuntimeInit) -> None:

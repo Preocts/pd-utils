@@ -10,11 +10,11 @@ from secretbox.envfile_loader import EnvFileLoader
 
 
 class RuntimeInit:
-    def __init__(self) -> None:
+    def __init__(self, prog_name: str) -> None:
         """Setup runtime environment for all scripts."""
         self.secrets = SecretBox()
         self.parser = argparse.ArgumentParser(
-            prog="aim-scripts",
+            prog=prog_name,
             description="Pagerduty command line utilities.",
             epilog="See: https://github.com/Preocts/pagerduty-utils",
         )
