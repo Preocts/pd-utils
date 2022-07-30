@@ -21,3 +21,7 @@ class ScheduleCoverage:
             html_url=resp["schedule"].get("html_url") or "",
             coverage=final.get("rendered_coverage_percentage") or 0.0,
         )
+
+    def as_dict(self) -> dict[str, Any]:
+        """Render model as dict."""
+        return dataclasses.asdict(self)
