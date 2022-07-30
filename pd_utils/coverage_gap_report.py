@@ -210,8 +210,13 @@ class CoverageGapReport:
 
 def main() -> int:
     """CLI entry."""
+    runtime.add_argument(
+        flag="--look-ahead",
+        default="14",
+        help_="Number of days to look ahead for gaps, default 14",
+    )
     args = runtime.parse_args()
-    client = CoverageGapReport(token=args.token)
+    client = CoverageGapReport(token=args.token, look_ahead_days=int(args.look_ahead))
     client.run_reports()
 
     return 0
