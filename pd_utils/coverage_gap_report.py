@@ -164,6 +164,16 @@ class CoverageGapReport:
             coverage = self.get_schedule_coverage(sch_id)
             self._schedule_map.update({sch_id: coverage} if coverage else {})
 
+    def _map_escalation_coverages(self, escalations: list[dict[str, Any]]) -> None:
+        """Map scheduleId:EscCoverage object, from pulled escalations."""
+        self.log.info("Mapping %d escalations for coverage", len(escalations))
+
+        for escalation in escalations:
+            ep_coverage = EscCoverage.build_from(escalation)
+            self._escalation_map[ep_coverage.ep_id] = ep_coverage
+
+        self.log.info("%d total objects converted", len(self._escalation_map))
+
 
 def main() -> int:
     """CLI entry."""

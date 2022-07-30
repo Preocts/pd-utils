@@ -74,7 +74,7 @@ def test_get_schedule_coverage_fails(search: CoverageGapReport) -> None:
     assert result is None
 
 
-def test_get_schedule_coverages(search: CoverageGapReport) -> None:
+def test_map_schedule_coverages(search: CoverageGapReport) -> None:
     mock_ids = ["a", "b", "c"]
     resps = ["Good", "Better", None]
 
@@ -84,3 +84,11 @@ def test_get_schedule_coverages(search: CoverageGapReport) -> None:
 
     assert len(search._schedule_map) == 2
     assert "c" not in search._schedule_map
+
+
+def test_map_escalation_coverages(search: CoverageGapReport) -> None:
+    mock_eps = json.loads(EP_RESP)[0]["escalation_policies"]
+
+    search._map_escalation_coverages(mock_eps)
+
+    assert len(search._escalation_map) == 1
