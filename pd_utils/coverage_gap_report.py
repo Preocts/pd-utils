@@ -35,7 +35,6 @@ class CoverageGapReport:
         *,
         max_query_limit: int = 100,
         look_ahead_days: int = 14,
-        report_filename: str | None = None,
     ) -> None:
         """
         Required: PagerDuty API v2 token with read access.
@@ -43,12 +42,10 @@ class CoverageGapReport:
         Args:
             max_query_limit: Number of objects to request at once from PD (max: 100)
             look_ahead_days: Number of days to look ahead on schedule (default: 14)
-            report_filename: Defaults to "schedule_gap_reportYYYY-MM-DD.csv"
         """
         self._since = DateTool.utcnow_isotime()
         self._until = DateTool.add_offset(self._since, days=look_ahead_days)
         self._max_query_limit = max_query_limit
-        self._report_filename = report_filename
         self._schedule_map: dict[str, SchCoverage] = {}
         self._escalation_map: dict[str, EscCoverage] = {}
 
@@ -67,8 +64,11 @@ class CoverageGapReport:
             QueryError
         """
         self._map_schedule_coverages(self._get_all_schedule_ids())
+        self._map_escalation_coverages(self._get_all_escalations())
+        self._hydrate_escalation_coverage_flags()
 
         self._save_schedule_report()
+        self._save_escalation_report()
 
     def get_schedule_coverage(self, schedule_id: str) -> SchCoverage | None:
         """Get ScheduleCoverage from PagerDuty with specific schedule id."""
@@ -112,21 +112,37 @@ class CoverageGapReport:
 
     def _save_schedule_report(self) -> None:
         """Save report to file."""
-        if not self._report_filename:
-            now = DateTool.utcnow_isotime().split("T")[0]
-            self._report_filename = f"schedule_gap_report{now}.csv"
+        now = DateTool.utcnow_isotime().split("T")[0]
+        filename = f"schedule_gap_report{now}.csv"
 
         coverages = list(self._schedule_map.values())
 
-        self.log.info("Saving %d lines to %s", len(coverages), self._report_filename)
+        self.log.info("Saving %d lines to %s", len(coverages), filename)
 
         cov_dcts = [cov.as_dict() for cov in coverages]
         fields = list(cov_dcts[0].keys())
 
-        with open(self._report_filename, "w") as outfile:
+        with open(filename, "w") as outfile:
             dct_writer = csv.DictWriter(outfile, fieldnames=fields)
             dct_writer.writeheader()
             dct_writer.writerows(cov_dcts)
+
+    def _save_escalation_report(self) -> None:
+        """Save report to file."""
+        now = DateTool.utcnow_isotime().split("T")[0]
+        filename = f"escalation_gap_report{now}.csv"
+
+        escalations = list(self._escalation_map.values())
+
+        self.log.info("Saving %d lines to %s", len(escalations), filename)
+
+        esc_dcts = [esc.as_dict() for esc in escalations]
+        fields = list(esc_dcts[0].keys())
+
+        with open(filename, "w") as outfile:
+            dict_writer = csv.DictWriter(outfile, fieldnames=fields)
+            dict_writer.writeheader()
+            dict_writer.writerows(esc_dcts)
 
     def _get_all_schedule_ids(self) -> set[str]:
         """Get all unique schedule IDs."""
@@ -176,7 +192,16 @@ class CoverageGapReport:
 
         for ep_coverage in self._escalation_map.values():
             for rule in ep_coverage.rules:
-                ...
+                times = self._extract_entries(rule.target_ids)
+                rule.has_gaps = DateTool.is_covered(times, self._since, self._until)
+
+    def _extract_entries(self, sch_ids: tuple[str, ...]) -> list[tuple[str, str]]:
+        """Extract all timestamp entries from given schedules"""
+        entries: list[tuple[str, str]] = []
+        schedules = [self._schedule_map[k] for k in sch_ids if k in self._schedule_map]
+        for schedule in schedules:
+            entries.extend(list(schedule.entries))
+        return entries
 
 
 def main() -> int:

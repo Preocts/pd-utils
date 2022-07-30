@@ -193,3 +193,11 @@ def test_map_escalation_coverages(search: CoverageGapReport) -> None:
     search._map_escalation_coverages(mock_eps)
 
     assert len(search._escalation_map) == 1
+
+
+def test_hydrate_escalation_coverage_flags(mapped_search: CoverageGapReport) -> None:
+    mapped_search._hydrate_escalation_coverage_flags()
+
+    assert mapped_search._escalation_map["mock1"].rules[0].has_gaps is False
+    assert mapped_search._escalation_map["mock2"].rules[0].has_gaps is True
+    assert mapped_search._escalation_map["mock3"].rules[0].has_gaps is False
