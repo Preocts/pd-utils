@@ -49,7 +49,7 @@ All scripts accept the `--logging-level` flag which defaults to `INFO`.
 Identify schedules that are lacking 100% coverage.
 
 ```shell
-usage: schedule-gap-report [-h] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--token TOKEN] [--email EMAIL]
+usage: coverage-gap-report [-h] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--token TOKEN] [--email EMAIL]
 
 Pagerduty command line utilities.
 

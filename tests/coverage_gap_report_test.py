@@ -7,8 +7,8 @@ from unittest.mock import patch
 import pytest
 from httpx import Response
 
-from pd_util_scripts.schedule_gap_report import CoverageGapReport
-from pd_util_scripts.schedule_gap_report import QueryError
+from pd_util_scripts.coverage_gap_report import CoverageGapReport
+from pd_util_scripts.coverage_gap_report import QueryError
 
 SCHEDULES_RESP = Path("tests/fixture/cov_gap/schedule_list.json").read_text()
 EXPECTED_IDS = {"PG3MDI8", "P4TPEME"}

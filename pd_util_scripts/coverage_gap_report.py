@@ -138,7 +138,12 @@ class CoverageGapReport:
         return schobj
 
 
-if __name__ == "__main__":
+def main() -> int:
+    """CLI entry."""
     args = runtime.parse_args()
-
     CoverageGapReport(token=args.token).run_reports()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

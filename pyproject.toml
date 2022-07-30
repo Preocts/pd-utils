@@ -51,8 +51,8 @@ homepage = "https://github.com/Preocts/pagerduty-utils"
 # changelog = ""
 
 # CLI scripts if needed
-# [project.scripts]
-# python-src-example = "module_name.sample:main"
+[project.scripts]
+coverage-gap-report = "pd_util_scripts.schedule_gap_report:main"
 
 # [tool.setuptools.packages.find]
 # where = ["src"]  # ["."] by default
