@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import csv
 import logging
+from typing import Any
 
 import httpx
 
+from pd_utils.model import EscalationCoverage as EscCoverage
 from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import DateTool
 from pd_utils.util import RuntimeInit
@@ -31,7 +33,7 @@ class CoverageGapReport:
         self,
         token: str,
         *,
-        max_query_limit: int = 1,
+        max_query_limit: int = 100,
         look_ahead_days: int = 14,
         report_filename: str | None = None,
     ) -> None:
@@ -47,6 +49,7 @@ class CoverageGapReport:
         self._look_ahead_days = look_ahead_days
         self._report_filename = report_filename
         self._schedule_map: dict[str, SchCoverage] = {}
+        self._escalation_map: dict[str, EscCoverage] = {}
 
         headers = {
             "Accept": "application/vnd.pagerduty+json;version=2",
@@ -62,9 +65,7 @@ class CoverageGapReport:
         Raises:
             QueryError
         """
-        sch_ids = self._get_all_schedule_ids()
-
-        self._map_schedule_coverages(sch_ids)
+        self._map_schedule_coverages(self._get_all_schedule_ids())
 
         self._save_schedule_report()
 
@@ -85,6 +86,33 @@ class CoverageGapReport:
             self.log.error("Error fetching schedule %s - %s", schedule_id, resp.text)
 
         return schobj
+
+    def _get_all_escalations(self) -> list[dict[str, Any]]:
+        """Pull all escalation polcies from PagerDuty."""
+        more = True
+        params = {"offset": 0, "limit": self._max_query_limit}
+        eps: list[dict[str, Any]] = []
+
+        while more:
+            self.log.debug("List escalation policies: %s", params)
+            resp = self._http.get(f"{self.base_url}/escalation_policies", params=params)
+
+            if not resp.is_success:
+                self.log.error("Unexpected error: %s", resp.text)
+                raise QueryError("Unexpected error")
+
+            eps.extend(resp.json()["escalation_policies"])
+
+            params["offset"] += self._max_query_limit
+            more = resp.json()["more"]
+
+        self.log.info("Discovered %d escalation policies.", len(eps))
+
+        return eps
+
+    # def get_escalation_coverages(self) -> list[EscCoverage]:
+    #     """Get EscalationCoverage for all PagerDuty escalation policies."""
+    #     coverages: list[EscCoverage] = []
 
     def _save_schedule_report(self) -> None:
         """Save report to file."""

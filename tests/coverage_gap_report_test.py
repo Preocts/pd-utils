@@ -16,6 +16,9 @@ EXPECTED_IDS = {"PG3MDI8", "P4TPEME"}
 SCHEDULE_RESP = Path("tests/fixture/cov_gap/schedule_gap.json").read_text()
 EXPECTED_ID = "PG3MDI8"
 
+EP_RESP = Path("tests/fixture/cov_gap/ep_list.json").read_text()
+EP_EXPECTED_COUNT = 2
+
 
 @pytest.fixture
 def search() -> CoverageGapReport:
@@ -30,6 +33,16 @@ def test_get_all_schedule_ids(search: CoverageGapReport) -> None:
         results = search._get_all_schedule_ids()
 
     assert not results - EXPECTED_IDS
+
+
+def test_get_all_escalations(search: CoverageGapReport) -> None:
+    resp_jsons = json.loads(EP_RESP)
+    resps = [Response(200, content=json.dumps(resp)) for resp in resp_jsons]
+    with patch.object(search._http, "get", side_effect=resps):
+
+        results = search._get_all_escalations()
+
+    assert len(results) == EP_EXPECTED_COUNT
 
 
 def test_get_all_schedules_error(search: CoverageGapReport) -> None:
