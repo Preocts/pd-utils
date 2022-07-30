@@ -46,7 +46,13 @@ All scripts accept the `--logging-level` flag which defaults to `INFO`.
 
 ### Coverage Gap Report
 
-Identify schedules that are lacking 100% coverage.
+Find gaps in on-call scheduling that could lead to missed alerts.  This report
+provides two csv files that:
+
+- List all Schedules found in the instance
+- Identify Schedules which are lacking 100% coverage
+- List all layers of Escalation Policies in the instance
+- Identify layers of Escalation Policies which lack 100% coverage
 
 ```shell
 usage: coverage-gap-report [-h] [--token TOKEN] [--email EMAIL] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
@@ -65,9 +71,10 @@ See: https://github.com/Preocts/pagerduty-utils
 
 Outputs:
 
-| filename                          | contents                                       |
-| --------------------------------- | ---------------------------------------------- |
-| schedule_gap_reportYYYY-MM-DD.csv | All schedules names, url links, and coverage % |
+| filename                                 | contents                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------- |
+| schedule_gap_reportYYYY-MM-DD.csv        | All schedules names, url links, and coverage %                      |
+| escalation_rule_gap_reportYYYY-MM-DD.csv | All escalation rules (layers) names, url links, and coverage status |
 
 ---
 
