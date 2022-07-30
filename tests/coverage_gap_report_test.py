@@ -67,7 +67,7 @@ def test_get_schedule_coverages(search: CoverageGapReport) -> None:
 
     with patch.object(search, "get_schedule_coverage", side_effect=resps):
 
-        results = search._get_schedule_coverages(mock_ids)  # type: ignore
+        search._map_schedule_coverages(mock_ids)  # type: ignore
 
-    assert len(results) == 2
-    assert "c" not in results
+    assert len(search._schedule_map) == 2
+    assert "c" not in search._schedule_map

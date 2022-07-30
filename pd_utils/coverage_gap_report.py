@@ -8,7 +8,7 @@ import logging
 
 import httpx
 
-from pd_utils.model import ScheduleCoverage as Coverage
+from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import DateTool
 from pd_utils.util import RuntimeInit
 
@@ -46,6 +46,7 @@ class CoverageGapReport:
         self._max_query_limit = max_query_limit
         self._look_ahead_days = look_ahead_days
         self._report_filename = report_filename
+        self._schedule_map: dict[str, SchCoverage] = {}
 
         headers = {
             "Accept": "application/vnd.pagerduty+json;version=2",
@@ -63,13 +64,13 @@ class CoverageGapReport:
         """
         sch_ids = self._get_all_schedule_ids()
 
-        schedule_map = self._get_schedule_coverages(sch_ids)
+        self._map_schedule_coverages(sch_ids)
 
-        self._save_schedule_report(list(schedule_map.values()))
+        self._save_schedule_report()
 
-    def get_schedule_coverage(self, schedule_id: str) -> Coverage | None:
+    def get_schedule_coverage(self, schedule_id: str) -> SchCoverage | None:
         """Get ScheduleCoverage from PagerDuty with specific schedule id."""
-        schobj: Coverage | None = None
+        schobj: SchCoverage | None = None
         now = DateTool.utcnow_isotime()
         params = {
             "since": now,
@@ -79,17 +80,19 @@ class CoverageGapReport:
         resp = self._http.get(f"{self.base_url}/schedules/{schedule_id}", params=params)
 
         if resp.is_success:
-            schobj = Coverage.build_from(resp.json())
+            schobj = SchCoverage.build_from(resp.json())
         else:
             self.log.error("Error fetching schedule %s - %s", schedule_id, resp.text)
 
         return schobj
 
-    def _save_schedule_report(self, coverages: list[Coverage]) -> None:
+    def _save_schedule_report(self) -> None:
         """Save report to file."""
         if not self._report_filename:
             now = DateTool.utcnow_isotime().split("T")[0]
             self._report_filename = f"schedule_gap_report{now}.csv"
+
+        coverages = list(self._schedule_map.values())
 
         self.log.info("Saving %d lines to %s", len(coverages), self._report_filename)
 
@@ -123,19 +126,15 @@ class CoverageGapReport:
 
         return set(sch_ids)
 
-    def _get_schedule_coverages(self, schedule_ids: set[str]) -> dict[str, Coverage]:
+    def _map_schedule_coverages(self, schedule_ids: set[str]) -> None:
         """Map scheduleId:ScheduleCoverage object, pulling detailed object from PD."""
-        schedule_map: dict[str, Coverage] = {}
-
         self.log.info("Pulling %d schedules for coverage.", len(schedule_ids))
 
         for idx, sch_id in enumerate(schedule_ids, 1):
             self.log.debug("Pulling %s (%d of %d)", sch_id, idx, len(schedule_ids))
 
             coverage = self.get_schedule_coverage(sch_id)
-            schedule_map.update({sch_id: coverage} if coverage else {})
-
-        return schedule_map
+            self._schedule_map.update({sch_id: coverage} if coverage else {})
 
 
 def main() -> int:
