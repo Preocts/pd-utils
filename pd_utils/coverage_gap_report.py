@@ -63,9 +63,27 @@ class CoverageGapReport:
         """
         sch_ids = self._get_all_schedule_ids()
 
-        coverage_map = self._get_schedule_coverages(sch_ids)
+        schedule_map = self._get_schedule_coverages(sch_ids)
 
-        self._save_schedule_report(list(coverage_map.values()))
+        self._save_schedule_report(list(schedule_map.values()))
+
+    def get_schedule_coverage(self, schedule_id: str) -> Coverage | None:
+        """Get ScheduleCoverage from PagerDuty with specific schedule id."""
+        schobj: Coverage | None = None
+        now = DateTool.utcnow_isotime()
+        params = {
+            "since": now,
+            "until": DateTool.add_offset(now, days=self._look_ahead_days),
+            "time_zone": "Etc/UTC",
+        }
+        resp = self._http.get(f"{self.base_url}/schedules/{schedule_id}", params=params)
+
+        if resp.is_success:
+            schobj = Coverage.build_from(resp.json())
+        else:
+            self.log.error("Error fetching schedule %s - %s", schedule_id, resp.text)
+
+        return schobj
 
     def _save_schedule_report(self, coverages: list[Coverage]) -> None:
         """Save report to file."""
@@ -118,24 +136,6 @@ class CoverageGapReport:
             schedule_map.update({sch_id: coverage} if coverage else {})
 
         return schedule_map
-
-    def get_schedule_coverage(self, schedule_id: str) -> Coverage | None:
-        """Get ScheduleCoverage from PagerDuty with specific schedule id."""
-        schobj: Coverage | None = None
-        now = DateTool.utcnow_isotime()
-        params = {
-            "since": now,
-            "until": DateTool.add_offset(now, days=self._look_ahead_days),
-            "time_zone": "Etc/UTC",
-        }
-        resp = self._http.get(f"{self.base_url}/schedules/{schedule_id}", params=params)
-
-        if resp.is_success:
-            schobj = Coverage.build_from(resp.json())
-        else:
-            self.log.error("Error fetching schedule %s - %s", schedule_id, resp.text)
-
-        return schobj
 
 
 def main() -> int:
