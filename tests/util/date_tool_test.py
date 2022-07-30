@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
-from pd_util_scripts.util import date_tool
-from pd_util_scripts.util import DateTool
+from pd_utils.util import date_tool
+from pd_utils.util import DateTool
 
 MOCK_NOW = datetime(2022, 12, 25, 13, 50, 30, 0)
 MOCK_ISO = "2022-12-25T13:50:30Z"

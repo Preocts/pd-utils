@@ -5,7 +5,7 @@ import logging
 import pytest
 from _pytest.logging import LogCaptureFixture
 
-from pd_util_scripts.util import RuntimeInit
+from pd_utils.util import RuntimeInit
 
 ENV_FILE = "tests/fixture/mockenv"
 

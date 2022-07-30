@@ -3,10 +3,10 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pagerduty-utils"
+name = "pd-utils"
 version = "0.0.1"
 requires-python = ">=3.8"
-description = "Utility scripts for PagerDuty"
+description = "Utility scripts for PagerDuty instance administration and reporting."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
@@ -45,14 +45,14 @@ test = [
 ]
 
 [project.urls]
-homepage = "https://github.com/Preocts/pagerduty-utils"
+homepage = "https://github.com/Preocts/pd-utils"
 # documentation = ""
 # repository = ""
 # changelog = ""
 
 # CLI scripts if needed
 [project.scripts]
-coverage-gap-report = "pd_util_scripts.schedule_gap_report:main"
+coverage-gap-report = "pd_utils.coverage_gap_report:main"
 
 # [tool.setuptools.packages.find]
 # where = ["src"]  # ["."] by default
@@ -82,7 +82,7 @@ disallow_untyped_defs = false
 [tool.coverage.run]
 branch = true
 source = [ "tests" ]
-source_pkgs = [ "pd_util_scripts" ]
+source_pkgs = [ "pd_utils" ]
 
 [tool.coverage.report]
 exclude_lines =[
@@ -123,7 +123,7 @@ deps =
     .
     mypy
 commands =
-    mypy -p pd_util_scripts
+    mypy -p pd_utils
 
 [testenv:pre-commit]
 skip_install = true

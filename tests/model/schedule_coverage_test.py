@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pd_util_scripts.model import ScheduleCoverage
+from pd_utils.model import ScheduleCoverage
 
 SCHEDULE = Path("tests/fixture/cov_gap/schedule_gap.json").read_text()
 
