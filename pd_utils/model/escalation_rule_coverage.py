@@ -6,24 +6,18 @@ from typing import Any
 
 
 @dataclasses.dataclass
-class _Rule:
-    index: int
-    target_names: tuple[str, ...]
-    target_ids: tuple[str, ...]
-    has_gaps: bool | None = None
-
-
-@dataclasses.dataclass
-class EscalationCoverage:
-    ep_id: str
-    name: str
-    html_url: str
-    rules: list[_Rule]
+class EscalationRuleCoverage:
+    policy_id: str
+    policy_name: str
+    policy_html_url: str
+    rule_index: int
+    rule_target_names: tuple[str, ...]
+    rule_target_ids: tuple[str, ...]
 
     @classmethod
-    def build_from(cls, resp: dict[str, Any]) -> EscalationCoverage:
-        """Build object from PagerDuty escalation_policies response."""
-        rules: list[_Rule] = []
+    def build_from(cls, resp: dict[str, Any]) -> list[EscalationRuleCoverage]:
+        """Build objects from PagerDuty escalation_policies response."""
+        rules: list[EscalationRuleCoverage] = []
         for idx, rule in enumerate(resp["escalation_rules"] or [], 1):
             names = [
                 t["summary"]
@@ -36,19 +30,16 @@ class EscalationCoverage:
                 if t["type"] == "schedule_reference"
             ]
             rules.append(
-                _Rule(
-                    index=idx,
-                    target_names=tuple(names),
-                    target_ids=tuple(targets),
+                cls(
+                    policy_id=resp["id"],
+                    policy_name=resp["name"],
+                    policy_html_url=resp["html_url"],
+                    rule_index=idx,
+                    rule_target_names=tuple(names),
+                    rule_target_ids=tuple(targets),
                 )
             )
-
-        return cls(
-            ep_id=resp["id"],
-            name=resp["name"],
-            html_url=resp["html_url"],
-            rules=rules,
-        )
+        return rules
 
     def as_dict(self) -> dict[str, Any]:
         """Render object as dictionary."""
