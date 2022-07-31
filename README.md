@@ -6,6 +6,19 @@
 [![Python package](https://github.com/Preocts/pd-utils/actions/workflows/python-tests.yml/badge.svg?branch=main)](https://github.com/Preocts/pd-utils/actions/workflows/python-tests.yml)
 [![codecov](https://codecov.io/gh/Preocts/pd-utils/branch/main/graph/badge.svg?token=ABlYTJMwLN)](https://codecov.io/gh/Preocts/pd-utils)
 
+- [PagerDuty Utils](#pagerduty-utils)
+  - [Requirements](#requirements)
+  - [Command line scripts:](#command-line-scripts)
+- [Available scripts](#available-scripts)
+  - [Coverage Gap Report](#coverage-gap-report)
+  - [Safelist Gatherer](#safelist-gatherer)
+- [Local developer installation](#local-developer-installation)
+  - [Installation steps](#installation-steps)
+  - [Misc Steps](#misc-steps)
+  - [Note on flake8:](#note-on-flake8)
+  - [pre-commit](#pre-commit)
+  - [Makefile](#makefile)
+
 A growing collection of small CLI scripts I've written for managing a PagerDuty
 instance.
 
@@ -45,9 +58,9 @@ with `python -m pd_utils.script_name`
 
 ---
 
-## Tools / Reports
+# Available scripts
 
-### Coverage Gap Report
+## Coverage Gap Report
 
 Find gaps in on-call scheduling that could lead to missed alerts.  This report
 provides two csv files that:
@@ -104,6 +117,34 @@ P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,1
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",False
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,3,"('Preocts Full Coverage',)","('P4TPEME',)",True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,4,"('Preocts Coverage Gaps',)","('PG3MDI8',)",False
+```
+
+---
+
+## Safelist Gatherer
+
+A lightweight *and completely portable* script for pulling the current webhook
+safelist IP addresses from PagerDuty's document site.  This script has no
+requirements outside of Python's standard library.  It was written so that I
+could build a monitor for when the safelisted IPs changed to avoid any missed
+webhook deliveries.
+
+Output to console:
+
+*Optional "us" or "eu" will limit results to that region. Default is both regions*
+
+```bash
+$ safelist-gatherer [eu|us]
+```
+
+Importing as module:
+
+```py
+from pd_utils import safelist_gatherer
+
+full_ip_list = safelist_gatherer.get_all_safelist()
+eu_ip_list = safelist_gatherer.get_eu_safelist()
+us_ip_list = safelist_gatherer.get_us_safelist()
 ```
 
 ---
