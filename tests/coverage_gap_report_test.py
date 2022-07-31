@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 from httpx import Response
 
+from pd_utils import coverage_gap_report
 from pd_utils.coverage_gap_report import CoverageGapReport
 from pd_utils.coverage_gap_report import QueryError
 from pd_utils.model import ScheduleCoverage
@@ -222,3 +223,20 @@ def test_save_escalation_report(
 
     # 3 mock escalations + header
     assert len(lines) == 4
+
+
+def test_main():
+    with patch.object(coverage_gap_report.CoverageGapReport, "run_reports") as mocked:
+        coverage_gap_report.main(_args=[])
+
+        mocked.assert_called_once()
+
+
+def test_run(search: CoverageGapReport) -> None:
+    resps = [
+        Response(200, content='{"schedules": [], "more": false}'),
+        Response(200, content='{"escalation_policies": [], "more": false}'),
+    ]
+
+    with patch.object(search._http, "get", side_effect=resps):
+        search.run_reports()

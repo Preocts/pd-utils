@@ -117,6 +117,10 @@ class CoverageGapReport:
 
         coverages = list(self._schedule_map.values())
 
+        if not coverages:
+            self.log.info("Nothing to save for schedules.")
+            return
+
         self.log.info("Saving %d lines to %s", len(coverages), filename)
 
         cov_dcts = [cov.as_dict() for cov in coverages]
@@ -133,6 +137,10 @@ class CoverageGapReport:
         filename = filename or f"escalation_rule_gap_report{now}.csv"
 
         ep_rules = list(self._escalation_map.values())
+
+        if not ep_rules:
+            self.log.info("Nothing to save for escalation policies.")
+            return
 
         self.log.info("Saving %d lines to %s", len(ep_rules), filename)
 
@@ -208,7 +216,7 @@ class CoverageGapReport:
         return entries
 
 
-def main() -> int:
+def main(*, _args: list[str] | None = None) -> int:
     """CLI entry."""
     runtime.add_standard_arguments(email=False)
     runtime.add_argument(
@@ -216,7 +224,7 @@ def main() -> int:
         default="14",
         help_="Number of days to look ahead for gaps, default 14",
     )
-    args = runtime.parse_args()
+    args = runtime.parse_args(_args)
     client = CoverageGapReport(token=args.token, look_ahead_days=int(args.look_ahead))
     client.run_reports()
 
