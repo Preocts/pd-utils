@@ -70,21 +70,18 @@ provides two csv files that:
 - List all layers of Escalation Policies in the instance
 - Identify layers of Escalation Policies which lack 100% coverage
 
-*Note: Email is not required for this script, it takes read-only actions*
-
 ```shell
-usage: coverage-gap-report [-h] [--look-ahead LOOK_AHEAD] [--token TOKEN] [--email EMAIL] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+usage: coverage-gap-report [-h] [--token TOKEN] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--look-ahead LOOK_AHEAD]
 
 Pagerduty command line utilities.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --look-ahead LOOK_AHEAD
-                        Number of days to look ahead for gaps, default 14
   --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
-  --email EMAIL         PagerDuty Email (default: $PAGERDUTY_EMAIL)
   --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         Logging level (default: $LOGGING_LEVEL | INFO)
+  --look-ahead LOOK_AHEAD
+                        Number of days to look ahead for gaps, default 14
 
 See: https://github.com/Preocts/pagerduty-utils
 ```
@@ -114,7 +111,7 @@ PA82FR2,Late shift gap,https://preocts.pagerduty.com/schedules/PA82FR2,47.9,"(('
 ```csv
 policy_id,policy_name,policy_html_url,rule_index,rule_target_names,rule_target_ids,is_fully_covered
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,1,"('Morning shift', 'Late shift gap')","('PQ1AJP1', 'PA82FR2')",False
-P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",False
+P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,3,"('Preocts Full Coverage',)","('P4TPEME',)",True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,4,"('Preocts Coverage Gaps',)","('PG3MDI8',)",False
 ```

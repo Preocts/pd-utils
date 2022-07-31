@@ -210,6 +210,7 @@ class CoverageGapReport:
 
 def main() -> int:
     """CLI entry."""
+    runtime.add_standard_arguments(email=False)
     runtime.add_argument(
         flag="--look-ahead",
         default="14",
