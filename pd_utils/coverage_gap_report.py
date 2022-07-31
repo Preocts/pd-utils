@@ -110,12 +110,16 @@ class CoverageGapReport:
 
         return eps
 
-    def _save_schedule_report(self) -> None:
+    def _save_schedule_report(self, filename: str | None = None) -> None:
         """Save report to file."""
         now = DateTool.utcnow_isotime().split("T")[0]
-        filename = f"schedule_gap_report{now}.csv"
+        filename = filename or f"schedule_gap_report{now}.csv"
 
         coverages = list(self._schedule_map.values())
+
+        if not coverages:
+            self.log.info("Nothing to save for schedules.")
+            return
 
         self.log.info("Saving %d lines to %s", len(coverages), filename)
 
@@ -127,12 +131,16 @@ class CoverageGapReport:
             dct_writer.writeheader()
             dct_writer.writerows(cov_dcts)
 
-    def _save_escalation_report(self) -> None:
+    def _save_escalation_report(self, filename: str | None = None) -> None:
         """Save report to file."""
         now = DateTool.utcnow_isotime().split("T")[0]
-        filename = f"escalation_rule_gap_report{now}.csv"
+        filename = filename or f"escalation_rule_gap_report{now}.csv"
 
         ep_rules = list(self._escalation_map.values())
+
+        if not ep_rules:
+            self.log.info("Nothing to save for escalation policies.")
+            return
 
         self.log.info("Saving %d lines to %s", len(ep_rules), filename)
 
@@ -208,14 +216,15 @@ class CoverageGapReport:
         return entries
 
 
-def main() -> int:
+def main(*, _args: list[str] | None = None) -> int:
     """CLI entry."""
+    runtime.add_standard_arguments(email=False)
     runtime.add_argument(
         flag="--look-ahead",
         default="14",
         help_="Number of days to look ahead for gaps, default 14",
     )
-    args = runtime.parse_args()
+    args = runtime.parse_args(_args)
     client = CoverageGapReport(token=args.token, look_ahead_days=int(args.look_ahead))
     client.run_reports()
 

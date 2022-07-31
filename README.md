@@ -6,6 +6,20 @@
 [![Python package](https://github.com/Preocts/pd-utils/actions/workflows/python-tests.yml/badge.svg?branch=main)](https://github.com/Preocts/pd-utils/actions/workflows/python-tests.yml)
 [![codecov](https://codecov.io/gh/Preocts/pd-utils/branch/main/graph/badge.svg?token=ABlYTJMwLN)](https://codecov.io/gh/Preocts/pd-utils)
 
+- [PagerDuty Utils](#pagerduty-utils)
+  - [Requirements](#requirements)
+  - [Command line scripts:](#command-line-scripts)
+- [Available scripts](#available-scripts)
+  - [Coverage Gap Report](#coverage-gap-report)
+  - [Safelist Gatherer](#safelist-gatherer)
+  - [Simple Alert](#simple-alert)
+- [Local developer installation](#local-developer-installation)
+  - [Installation steps](#installation-steps)
+  - [Misc Steps](#misc-steps)
+  - [Note on flake8:](#note-on-flake8)
+  - [pre-commit](#pre-commit)
+  - [Makefile](#makefile)
+
 A growing collection of small CLI scripts I've written for managing a PagerDuty
 instance.
 
@@ -45,9 +59,9 @@ with `python -m pd_utils.script_name`
 
 ---
 
-## Tools / Reports
+# Available scripts
 
-### Coverage Gap Report
+## Coverage Gap Report
 
 Find gaps in on-call scheduling that could lead to missed alerts.  This report
 provides two csv files that:
@@ -57,21 +71,18 @@ provides two csv files that:
 - List all layers of Escalation Policies in the instance
 - Identify layers of Escalation Policies which lack 100% coverage
 
-*Note: Email is not required for this script, it takes read-only actions*
-
 ```shell
-usage: coverage-gap-report [-h] [--look-ahead LOOK_AHEAD] [--token TOKEN] [--email EMAIL] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+usage: coverage-gap-report [-h] [--token TOKEN] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--look-ahead LOOK_AHEAD]
 
 Pagerduty command line utilities.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --look-ahead LOOK_AHEAD
-                        Number of days to look ahead for gaps, default 14
   --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
-  --email EMAIL         PagerDuty Email (default: $PAGERDUTY_EMAIL)
   --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         Logging level (default: $LOGGING_LEVEL | INFO)
+  --look-ahead LOOK_AHEAD
+                        Number of days to look ahead for gaps, default 14
 
 See: https://github.com/Preocts/pagerduty-utils
 ```
@@ -101,9 +112,67 @@ PA82FR2,Late shift gap,https://preocts.pagerduty.com/schedules/PA82FR2,47.9,"(('
 ```csv
 policy_id,policy_name,policy_html_url,rule_index,rule_target_names,rule_target_ids,is_fully_covered
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,1,"('Morning shift', 'Late shift gap')","('PQ1AJP1', 'PA82FR2')",False
-P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",False
+P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,3,"('Preocts Full Coverage',)","('P4TPEME',)",True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,4,"('Preocts Coverage Gaps',)","('PG3MDI8',)",False
+```
+
+---
+
+## Safelist Gatherer
+
+A lightweight *and completely portable* script for pulling the current webhook
+safelist IP addresses from PagerDuty's document site.  This script has no
+requirements outside of Python's standard library.  It was written so that I
+could build a monitor for when the safelisted IPs changed to avoid any missed
+webhook deliveries.
+
+Output to console:
+
+*Optional "us" or "eu" will limit results to that region. Default is both regions*
+
+```bash
+$ safelist-gatherer [eu|us]
+```
+
+Importing as module:
+
+```py
+from pd_utils import safelist_gatherer
+
+full_ip_list = safelist_gatherer.get_all_safelist()
+eu_ip_list = safelist_gatherer.get_eu_safelist()
+us_ip_list = safelist_gatherer.get_us_safelist()
+```
+
+---
+
+## Simple Alert
+
+A stand-alone script with only standard library dependencies for sending an API
+v2 alert event to PagerDuty.  Use with the command line or as a drop-in module
+for additional scripts.
+
+[PagerDuty alert event documentation](https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTgx-send-an-alert-event)
+
+**Note**: "Simple" means simple here. There is no retry logic, little error
+handling, and all alerts are delivered a `critical` status.
+
+Console script:
+
+```bash
+simple-alert "Routing Key" "Alert Title" "Alert Body" ["dedup_key"]
+
+or
+
+python -m pd_utils.simple_alert "Routing Key" "Alert Title" "Alert Body" ["dedup_key"]
+```
+
+Importing as module:
+
+```py
+from pd_utils import simple_alert
+pd_alert.send_alert(...)
 ```
 
 ---

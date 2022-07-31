@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 from httpx import Response
 
+from pd_utils import coverage_gap_report
 from pd_utils.coverage_gap_report import CoverageGapReport
 from pd_utils.coverage_gap_report import QueryError
 from pd_utils.model import ScheduleCoverage
@@ -143,6 +144,16 @@ def test_get_all_schedules_error(search: CoverageGapReport) -> None:
             search._get_all_schedule_ids()
 
 
+def test_get_all_escalations_error(search: CoverageGapReport) -> None:
+    resps = [Response(401, content="")]
+
+    with patch.object(search._http, "get", side_effect=resps):
+
+        with pytest.raises(QueryError):
+
+            search._get_all_escalations()
+
+
 def test_get_schedule_coverage(search: CoverageGapReport) -> None:
     resps = [Response(200, content=SCHEDULE_RESP)]
     with patch.object(search._http, "get", side_effect=resps):
@@ -188,3 +199,44 @@ def test_hydrate_escalation_coverage_flags(mapped_search: CoverageGapReport) -> 
     assert mapped_search._escalation_map["mock1"].is_fully_covered is False
     assert mapped_search._escalation_map["mock2"].is_fully_covered is True
     assert mapped_search._escalation_map["mock3"].is_fully_covered is False
+
+
+def test_save_schedule_report(
+    mapped_search: CoverageGapReport,
+    mock_filename: str,
+) -> None:
+    mapped_search._save_schedule_report(mock_filename)
+
+    lines = Path(mock_filename).read_text().split("\n")
+
+    # 4 mock schedules + header
+    assert len([line for line in lines if line]) == 5
+
+
+def test_save_escalation_report(
+    mapped_search: CoverageGapReport,
+    mock_filename: str,
+) -> None:
+    mapped_search._save_escalation_report(mock_filename)
+
+    lines = Path(mock_filename).read_text().split("\n")
+
+    # 3 mock escalations + header
+    assert len([line for line in lines if line]) == 4
+
+
+def test_main():
+    with patch.object(coverage_gap_report.CoverageGapReport, "run_reports") as mocked:
+        coverage_gap_report.main(_args=[])
+
+        mocked.assert_called_once()
+
+
+def test_run(search: CoverageGapReport) -> None:
+    resps = [
+        Response(200, content='{"schedules": [], "more": false}'),
+        Response(200, content='{"escalation_policies": [], "more": false}'),
+    ]
+
+    with patch.object(search._http, "get", side_effect=resps):
+        search.run_reports()
