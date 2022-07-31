@@ -60,31 +60,52 @@ class RuntimeInit:
             choices=choices,
         )
 
+    def add_standard_arguments(
+        self,
+        *,
+        token: bool = True,
+        email: bool = True,
+        loglevel: bool = True,
+    ) -> None:
+        """
+        Add most common command line arguments to the parser.
+
+        Keyword Args:
+            token: When true collects optional API token
+            email: When true collects optional PagerDuty account email
+            loglevel: When true collects optional logging level
+        """
+        if token:
+            self.parser.add_argument(
+                "--token",
+                help="PagerDuty API Token (default: $PAGERDUTY_TOKEN)",
+                default=self.secrets.get("PAGERDUTY_TOKEN", ""),
+            )
+        if email:
+            self.parser.add_argument(
+                "--email",
+                help="PagerDuty Email (default: $PAGERDUTY_EMAIL)",
+                default=self.secrets.get("PAGERDUTY_EMAIL", ""),
+            )
+        if loglevel:
+            self.parser.add_argument(
+                "--logging-level",
+                help="Logging level (default: $LOGGING_LEVEL | INFO)",
+                choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                default=self.secrets.get("LOGGING_LEVEL", "INFO"),
+            )
+
     def parse_args(self, args: Sequence[str] | None = None) -> argparse.Namespace:
         """Parse command line arguments."""
-        self.parser.add_argument(
-            "--token",
-            help="PagerDuty API Token (default: $PAGERDUTY_TOKEN)",
-            default=self.secrets.get("PAGERDUTY_TOKEN", ""),
-        )
-        self.parser.add_argument(
-            "--email",
-            help="PagerDuty Email (default: $PAGERDUTY_EMAIL)",
-            default=self.secrets.get("PAGERDUTY_EMAIL", ""),
-        )
-        self.parser.add_argument(
-            "--logging-level",
-            help="Logging level (default: $LOGGING_LEVEL | INFO)",
-            choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-            default=self.secrets.get("LOGGING_LEVEL", "INFO"),
-        )
-
         parsed = (
             self.parser.parse_args() if args is None else self.parser.parse_args(args)
         )
-
-        self.secrets.set("PAGERDUTY_TOKEN", parsed.token)
-        self.secrets.set("PAGERDUTY_EMAIL", parsed.email)
-        self.secrets.set("LOGGING_LEVEL", parsed.logging_level)
+        # Inject overrides to secrets if in parser
+        if "token" in parsed:
+            self.secrets.set("PAGERDUTY_TOKEN", parsed.token)
+        if "email" in parsed:
+            self.secrets.set("PAGERDUTY_EMAIL", parsed.email)
+        if "logging_level" in parsed:
+            self.secrets.set("LOGGING_LEVEL", parsed.logging_level)
 
         return parsed

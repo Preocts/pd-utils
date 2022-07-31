@@ -42,6 +42,8 @@ def test_init_logging(runtime: RuntimeInit, caplog: LogCaptureFixture) -> None:
 
 
 def test_empty_parse_arg_results(runtime: RuntimeInit) -> None:
+    runtime.add_standard_arguments()
+
     args = runtime.parse_args([])
 
     assert args.token == ""
@@ -53,6 +55,7 @@ def test_environ_parse_arg_defaults(runtime: RuntimeInit) -> None:
     runtime.secrets.set("PAGERDUTY_TOKEN", "TOKEN")
     runtime.secrets.set("PAGERDUTY_EMAIL", "EMAIL")
     runtime.secrets.set("LOGGING_LEVEL", "LOGGING_LEVEL")
+    runtime.add_standard_arguments()
 
     args = runtime.parse_args([])
 
@@ -62,6 +65,7 @@ def test_environ_parse_arg_defaults(runtime: RuntimeInit) -> None:
 
 
 def test_parse_arg_cli(runtime: RuntimeInit) -> None:
+    runtime.add_standard_arguments()
     cli = ["--token", "MOCKTOKEN", "--email", "MOCKEMAIL"]
 
     args = runtime.parse_args(cli)
