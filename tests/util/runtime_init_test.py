@@ -23,6 +23,26 @@ def test_init_secrets(runtime: RuntimeInit) -> None:
     assert runtime.secrets.get("LOGGING_LEVEL") == "CRITICAL"
 
 
+def test_add_standard_arguments(runtime: RuntimeInit) -> None:
+    runtime.add_standard_arguments()
+
+    args = runtime.parse_args([])
+
+    assert "token" in args
+    assert "email" in args
+    assert "logging_level" in args
+
+
+def test_add_standard_arguments_toggled_off(runtime: RuntimeInit) -> None:
+    runtime.add_standard_arguments(token=False, email=False, loglevel=False)
+
+    args = runtime.parse_args([])
+
+    assert "token" not in args
+    assert "email" not in args
+    assert "logging_level" not in args
+
+
 def test_init_logging(runtime: RuntimeInit, caplog: LogCaptureFixture) -> None:
     prior_level = logging.getLogger().level
     logger = logging.getLogger("init_logging")
