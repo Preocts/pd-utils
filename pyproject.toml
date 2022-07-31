@@ -53,6 +53,7 @@ homepage = "https://github.com/Preocts/pd-utils"
 # CLI scripts if needed
 [project.scripts]
 coverage-gap-report = "pd_utils.coverage_gap_report:main"
+safelist-gatherer = "pd_utils.safelist_gatherer:console_output"
 
 # [tool.setuptools.packages.find]
 # where = ["src"]  # ["."] by default
