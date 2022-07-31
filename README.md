@@ -12,6 +12,7 @@
 - [Available scripts](#available-scripts)
   - [Coverage Gap Report](#coverage-gap-report)
   - [Safelist Gatherer](#safelist-gatherer)
+  - [Simple Alert](#simple-alert)
 - [Local developer installation](#local-developer-installation)
   - [Installation steps](#installation-steps)
   - [Misc Steps](#misc-steps)
@@ -142,6 +143,36 @@ from pd_utils import safelist_gatherer
 full_ip_list = safelist_gatherer.get_all_safelist()
 eu_ip_list = safelist_gatherer.get_eu_safelist()
 us_ip_list = safelist_gatherer.get_us_safelist()
+```
+
+---
+
+## Simple Alert
+
+A stand-alone script with only standard library dependencies for sending an API
+v2 alert event to PagerDuty.  Use with the command line or as a drop-in module
+for additional scripts.
+
+[PagerDuty alert event documentation](https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTgx-send-an-alert-event)
+
+**Note**: "Simple" means simple here. There is no retry logic, little error
+handling, and all alerts are delivered a `critical` status.
+
+Console script:
+
+```bash
+simple-alert "Routing Key" "Alert Title" "Alert Body" ["dedup_key"]
+
+or
+
+python -m pd_utils.simple_alert "Routing Key" "Alert Title" "Alert Body" ["dedup_key"]
+```
+
+Importing as module:
+
+```py
+from pd_utils import simple_alert
+pd_alert.send_alert(...)
 ```
 
 ---
