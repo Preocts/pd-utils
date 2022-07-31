@@ -198,3 +198,27 @@ def test_hydrate_escalation_coverage_flags(mapped_search: CoverageGapReport) -> 
     assert mapped_search._escalation_map["mock1"].is_fully_covered is False
     assert mapped_search._escalation_map["mock2"].is_fully_covered is True
     assert mapped_search._escalation_map["mock3"].is_fully_covered is False
+
+
+def test_save_schedule_report(
+    mapped_search: CoverageGapReport,
+    mock_filename: str,
+) -> None:
+    mapped_search._save_schedule_report(mock_filename)
+
+    lines = Path(mock_filename).read_text().splitlines()
+
+    # 4 mock schedules + header
+    assert len(lines) == 5
+
+
+def test_save_escalation_report(
+    mapped_search: CoverageGapReport,
+    mock_filename: str,
+) -> None:
+    mapped_search._save_escalation_report(mock_filename)
+
+    lines = Path(mock_filename).read_text().splitlines()
+
+    # 3 mock escalations + header
+    assert len(lines) == 4
