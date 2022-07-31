@@ -143,6 +143,16 @@ def test_get_all_schedules_error(search: CoverageGapReport) -> None:
             search._get_all_schedule_ids()
 
 
+def test_get_all_escalations_error(search: CoverageGapReport) -> None:
+    resps = [Response(401, content="")]
+
+    with patch.object(search._http, "get", side_effect=resps):
+
+        with pytest.raises(QueryError):
+
+            search._get_all_escalations()
+
+
 def test_get_schedule_coverage(search: CoverageGapReport) -> None:
     resps = [Response(200, content=SCHEDULE_RESP)]
     with patch.object(search._http, "get", side_effect=resps):
