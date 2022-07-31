@@ -207,10 +207,10 @@ def test_save_schedule_report(
 ) -> None:
     mapped_search._save_schedule_report(mock_filename)
 
-    lines = Path(mock_filename).read_text().splitlines()
+    lines = Path(mock_filename).read_text().split("\n")
 
     # 4 mock schedules + header
-    assert len(lines) == 5
+    assert len([line for line in lines if line]) == 5
 
 
 def test_save_escalation_report(
@@ -219,10 +219,10 @@ def test_save_escalation_report(
 ) -> None:
     mapped_search._save_escalation_report(mock_filename)
 
-    lines = Path(mock_filename).read_text().splitlines()
+    lines = Path(mock_filename).read_text().split("\n")
 
     # 3 mock escalations + header
-    assert len(lines) == 4
+    assert len([line for line in lines if line]) == 4
 
 
 def test_main():
