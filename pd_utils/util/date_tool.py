@@ -45,9 +45,9 @@ class DateTool:
         does not assert that a given time range is covered. The first
         and last time slot provided are assumed covered before and after.
         """
-        has_coverage = True  # Always assume the best of people until proven otherwise.
+        has_coverage = bool(sorted_slots)
 
-        _, prior_stop = sorted_slots.pop()
+        _, prior_stop = sorted_slots.pop() if has_coverage else ("", "")
         while sorted_slots:
 
             start, stop = sorted_slots.pop()

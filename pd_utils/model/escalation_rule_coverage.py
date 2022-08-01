@@ -13,6 +13,7 @@ class EscalationRuleCoverage:
     rule_index: int
     rule_target_names: tuple[str, ...]
     rule_target_ids: tuple[str, ...]
+    has_direct_contact: bool
     is_fully_covered: bool | None = None
 
     @classmethod
@@ -20,16 +21,15 @@ class EscalationRuleCoverage:
         """Build objects from PagerDuty escalation_policies response."""
         rules: list[EscalationRuleCoverage] = []
         for idx, rule in enumerate(resp["escalation_rules"] or [], 1):
-            names = [
-                t["summary"]
-                for t in rule["targets"] or []
-                if t["type"] == "schedule_reference"
-            ]
-            targets = [
-                t["id"]
-                for t in rule["targets"] or []
-                if t["type"] == "schedule_reference"
-            ]
+            direct_contact = False
+            names: list[str] = []
+            targets: list[str] = []
+            for target in rule["targets"]:
+                if target["type"] == "user_reference":
+                    direct_contact = True
+                if target["type"] == "schedule_reference":
+                    names.append(target["summary"])
+                    targets.append(target["id"])
             rules.append(
                 cls(
                     policy_id=resp["id"],
@@ -38,6 +38,7 @@ class EscalationRuleCoverage:
                     rule_index=idx,
                     rule_target_names=tuple(names),
                     rule_target_ids=tuple(targets),
+                    has_direct_contact=direct_contact,
                 )
             )
         return rules
