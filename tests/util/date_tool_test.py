@@ -62,6 +62,10 @@ def test_add_offset() -> None:
             ],
             True,
         ),
+        (
+            [],
+            False,
+        ),
     ),
 )
 def test_is_gapless(time_slots: list[tuple[str, str]], expected: bool) -> None:
@@ -117,6 +121,12 @@ def test_is_gapless(time_slots: list[tuple[str, str]], expected: bool) -> None:
             "2022-08-01T00:00:00Z",
             True,
         ),
+        (  # Test: Edge case, this actually should never happen
+            [],
+            "2022-07-29T04:18:19Z",
+            "2022-08-01T00:00:00Z",
+            False,
+        ),
     ),
 )
 def test_is_covered(
@@ -126,10 +136,3 @@ def test_is_covered(
     expected: bool,
 ) -> None:
     assert DateTool.is_covered(time_slots, start, stop) is expected
-
-
-def test_is_gapless_empty_list() -> None:
-    # Edge case
-    result = DateTool._is_gapless([])
-
-    assert result is False
