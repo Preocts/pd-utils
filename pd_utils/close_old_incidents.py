@@ -9,15 +9,14 @@ from typing import TypedDict
 import httpx
 
 from pd_utils.model import Incident
+from pd_utils.util import DateTool
 from pd_utils.util import RuntimeInit
 
 # import csv
-# from pd_utils.util import DateTool
 
 
-EXPIRE_DAYS = 10  # Number of days a incident can be open before it is closed
-FILEDATE = datetime.datetime.now().strftime("%Y-%m-%dT%H.%M.%SZ")
-NOW = datetime.datetime.now()
+FILEDATE = datetime.datetime.now().strftime("%Y-%m-%dT%H%M%SZ")
+NOW = datetime.datetime.utcnow()
 
 runtime = RuntimeInit("close-old-incidents")
 runtime.init_secrets()
@@ -72,9 +71,21 @@ class CloseOldIncidents:
         }
 
         self._http = httpx.Client(headers=headers)
-        self._max_query_limit = 1
-        self._incidents: list[IncidentRow] = []
-        self._errors: list[IncidentRow] = []
+        self._max_query_limit = 100
+        self._close_after_seconds = close_after_days * 86_400
+        self._close_active = close_active
+        self._close_priority = close_priority
+
+    def _isolate_old_incidents(self, incidents: list[Incident]) -> list[Incident]:
+        """Isolate old incidents from internal list of incidents."""
+        old_incidents: list[Incident] = []
+        for incident in incidents:
+            delta = DateTool.to_seconds(NOW.isoformat(), incident.created_at)
+            if delta > self._close_after_seconds:
+                old_incidents.append(incident)
+        self.log.info("Isolated %s old incidents", len(old_incidents))
+
+        return old_incidents
 
     # TODO: preocts - Reused code - This needs to be extracted into a helper
     def _get_all_incidents(self) -> list[Incident]:

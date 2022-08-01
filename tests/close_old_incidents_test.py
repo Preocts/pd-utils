@@ -9,6 +9,8 @@ from httpx import Response
 
 from pd_utils.close_old_incidents import CloseOldIncidents
 from pd_utils.close_old_incidents import QueryError
+from pd_utils.model import Incident
+from pd_utils.util import DateTool
 
 
 INCIDENTS_RESP = Path("tests/fixture/close-incidents/incidents.json").read_text()
@@ -60,3 +62,21 @@ def test_get_newest_log_entry_error(closer: CloseOldIncidents) -> None:
     with patch.object(closer._http, "get", side_effect=resp):
         with pytest.raises(QueryError):
             closer._get_newest_log_entry("mock")
+
+
+def test_isolate_old_incidents(closer: CloseOldIncidents) -> None:
+    now = DateTool.utcnow_isotime()
+    days5 = DateTool.add_offset(now, days=5)
+    days10 = DateTool.add_offset(now, days=9, minutes=58)
+    old = DateTool.add_offset(now, days=10, minutes=1)
+    incs = [
+        Incident("a", 1, "", now, "", "", False, ""),
+        Incident("b", 4, "", old, "", "", False, ""),
+        Incident("c", 2, "", days5, "", "", False, ""),
+        Incident("d", 3, "", days10, "", "", False, ""),
+    ]
+
+    results = closer._isolate_old_incidents(incs)
+
+    assert len(results) == 1
+    assert results[0].incident_number == 4
