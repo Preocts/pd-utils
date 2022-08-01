@@ -17,6 +17,14 @@ class DateTool:
         return datetime.fromisoformat(isotime.rstrip("Z"))
 
     @staticmethod
+    def to_seconds(start: str, end: str) -> int:
+        """Find the number of seconds between two PD formated iso times."""
+        start_ = DateTool.to_datetime(start)
+        end_ = DateTool.to_datetime(end)
+        delta = end_ - start_
+        return delta.days * 86_400 + delta.seconds
+
+    @staticmethod
     def add_offset(
         isotime: str,
         *,

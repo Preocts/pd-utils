@@ -143,3 +143,19 @@ def test_is_covered(
     expected: bool,
 ) -> None:
     assert DateTool.is_covered(time_slots, start, stop) is expected
+
+
+@pytest.mark.parametrize(
+    ("from_", "to_", "expected"),
+    (
+        ("2022-12-25T13:50:30Z", "2022-12-25T13:51:00Z", 30),
+        ("2022-12-25T13:50:30Z", "2022-12-26T13:49:30Z", 86_340),
+        ("2022-12-25T13:50:30Z", "2022-12-26T13:51:30Z", 86_460),
+        ("2022-12-25T13:50:30Z", "2022-12-26T13:50:30Z", 86_400),
+        ("2022-12-25T13:50:30Z", "2022-12-25T13:50:30Z", 0),
+    ),
+)
+def test_to_seconds(from_: str, to_: str, expected: int) -> None:
+    result = DateTool.to_seconds(from_, to_)
+
+    assert result == expected
