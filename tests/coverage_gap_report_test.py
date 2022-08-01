@@ -39,6 +39,7 @@ def mapped_search(search: CoverageGapReport) -> CoverageGapReport:
             rule_index=1,
             rule_target_names=("Morning shift", "Late shift gap"),
             rule_target_ids=("sch1", "sch2"),
+            has_direct_contact=False,
             is_fully_covered=None,
         ),
         # Expected to be fully covered
@@ -49,6 +50,7 @@ def mapped_search(search: CoverageGapReport) -> CoverageGapReport:
             rule_index=1,
             rule_target_names=("Morning shift", "Late shift"),
             rule_target_ids=("sch1", "sch3"),
+            has_direct_contact=False,
             is_fully_covered=None,
         ),
         # Expected to have gap in range
@@ -59,6 +61,7 @@ def mapped_search(search: CoverageGapReport) -> CoverageGapReport:
             rule_index=1,
             rule_target_names=("Morning shift", "Late Shorted"),
             rule_target_ids=("sch1", "sch4"),
+            has_direct_contact=False,
             is_fully_covered=None,
         ),
     }

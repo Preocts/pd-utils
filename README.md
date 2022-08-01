@@ -70,6 +70,12 @@ provides two csv files that:
 - Identify Schedules which are lacking 100% coverage
 - List all layers of Escalation Policies in the instance
 - Identify layers of Escalation Policies which lack 100% coverage
+  - Note: Directly assigning a user target in an escalation policy is
+    technically full coverage however in the spirit of sharing on-call and
+    avoiding burnout this report does not count direct contacts in the coverage
+    measure
+  - A column with `has_direct_contact` being `TRUE` but a `is_fully_covered` as
+    `FALSE` indicats the on-call rotation needs attention
 
 ```shell
 usage: coverage-gap-report [-h] [--token TOKEN] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--look-ahead LOOK_AHEAD]
@@ -111,10 +117,10 @@ PA82FR2,Late shift gap,https://preocts.pagerduty.com/schedules/PA82FR2,47.9,"(('
 
 ```csv
 policy_id,policy_name,policy_html_url,rule_index,rule_target_names,rule_target_ids,is_fully_covered
-P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,1,"('Morning shift', 'Late shift gap')","('PQ1AJP1', 'PA82FR2')",False
-P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",True
-P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,3,"('Preocts Full Coverage',)","('P4TPEME',)",True
-P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,4,"('Preocts Coverage Gaps',)","('PG3MDI8',)",False
+P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,1,"('Morning shift', 'Late shift gap')","('PQ1AJP1', 'PA82FR2')",False,False
+P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",False,True
+P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,3,"('Preocts Full Coverage',)","('P4TPEME',)",False,True
+P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,4,"('Preocts Coverage Gaps',)","('PG3MDI8',)",False,False
 ```
 
 ---
