@@ -4,11 +4,11 @@ from __future__ import annotations
 import datetime
 import logging
 from typing import Any
-from typing import Dict
 from typing import TypedDict
 
 import httpx
 
+from pd_utils.model import Incident
 from pd_utils.util import RuntimeInit
 
 # import csv
@@ -18,8 +18,6 @@ from pd_utils.util import RuntimeInit
 EXPIRE_DAYS = 10  # Number of days a incident can be open before it is closed
 FILEDATE = datetime.datetime.now().strftime("%Y-%m-%dT%H.%M.%SZ")
 NOW = datetime.datetime.now()
-
-Incident = Dict[str, Any]
 
 runtime = RuntimeInit("close-old-incidents")
 runtime.init_secrets()
@@ -79,7 +77,7 @@ class CloseOldIncidents:
         self._errors: list[IncidentRow] = []
 
     # TODO: preocts - Reused code - This needs to be extracted into a helper
-    def _get_all_incidents(self) -> list[dict[str, Any]]:
+    def _get_all_incidents(self) -> list[Incident]:
         """Pull all open incidents from PagerDuty."""
         more = True
         params: dict[str, Any] = {
@@ -105,7 +103,7 @@ class CloseOldIncidents:
 
         self.log.info("Discovered %d incidents.", len(incidents))
 
-        return incidents
+        return [Incident.build_from(incident) for incident in incidents]
 
     # TODO: preocts - Reused code - This needs to be extracted into a helper
     def _get_newest_log_entry(self, incident_id: str) -> list[dict[str, Any]]:
@@ -137,6 +135,6 @@ if __name__ == "__main__":
     )
     resp = client._get_all_incidents()
     for incident in resp:
-        client._get_newest_log_entry(incident["id"])
+        client._get_newest_log_entry(incident.incident_id)
 
     raise SystemExit()
