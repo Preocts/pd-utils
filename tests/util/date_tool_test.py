@@ -126,3 +126,10 @@ def test_is_covered(
     expected: bool,
 ) -> None:
     assert DateTool.is_covered(time_slots, start, stop) is expected
+
+
+def test_is_gapless_empty_list() -> None:
+    # Edge case
+    result = DateTool._is_gapless([])
+
+    assert result is False
