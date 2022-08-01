@@ -106,7 +106,7 @@ class CloseOldIncidents:
         return [Incident.build_from(incident) for incident in incidents]
 
     # TODO: preocts - Reused code - This needs to be extracted into a helper
-    def _get_newest_log_entry(self, incident_id: str) -> list[dict[str, Any]]:
+    def _get_newest_log_entry(self, incident_id: str) -> dict[str, Any]:
         """Pull most recent log entry from incident."""
 
         params: dict[str, Any] = {
@@ -125,7 +125,7 @@ class CloseOldIncidents:
             self.log.error("Unexpected error: %s", resp.text)
             raise QueryError("Unexpected error")
 
-        return resp.json()["log_entries"]
+        return resp.json()["log_entries"][0]
 
 
 if __name__ == "__main__":
