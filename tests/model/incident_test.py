@@ -14,11 +14,11 @@ def test_model() -> None:
     model = Incident.build_from(resp)
     dct = model.as_dict()
 
-    assert dct["incident_id"] == "Q28ZYJ9YPJ7XRN"
-    assert model.incident_number == 1
-    assert model.title == "This is a test"
-    assert model.created_at == "2022-07-31T02:36:20Z"
-    assert model.status == "resolved"
-    assert model.last_status_change_at == "2022-07-31T04:34:44Z"
+    assert dct["incident_id"] == "Q36LM3UBN4V94O"
+    assert model.incident_number == 3
+    assert model.title == "This has no priority"
+    assert model.created_at == "2022-08-01T02:38:25Z"
+    assert model.status == "acknowledged"
+    assert model.last_status_change_at == "2022-08-01T02:39:15Z"
     assert model.has_priority is False
     assert model.urgency == "high"
