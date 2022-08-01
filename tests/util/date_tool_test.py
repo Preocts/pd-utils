@@ -26,6 +26,13 @@ def test_to_isotime() -> None:
     assert result == MOCK_ISO
 
 
+def test_to_datetime() -> None:
+    result = DateTool.to_datetime(MOCK_ISO)
+
+    assert result == MOCK_NOW
+    assert result.tzinfo is None
+
+
 def test_utcnow_isotime(patch_datetime_utcnow: None) -> None:
 
     result = date_tool.DateTool.utcnow_isotime()

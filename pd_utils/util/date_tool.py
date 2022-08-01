@@ -12,6 +12,11 @@ class DateTool:
         return date_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @staticmethod
+    def to_datetime(isotime: str) -> datetime:
+        """Covert PD formated iso time to unaware datetime."""
+        return datetime.fromisoformat(isotime.rstrip("Z"))
+
+    @staticmethod
     def add_offset(
         isotime: str,
         *,
