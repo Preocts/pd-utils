@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -98,3 +99,21 @@ def test_isolate_nonpriority_incidents(
 
     assert len(results) == 2
     assert results[0].has_priority is False
+
+
+def test_isolate_inactive_incidents(
+    closer: CloseOldIncidents,
+    mock_incidents: list[Incident],
+) -> None:
+    mocklog = json.loads(LOG_ENTRIES_RESP)["log_entries"][0]
+    mocklogs: list[dict[str, Any]] = []
+    for inc in mock_incidents:
+        mocklog["created_at"] = inc.created_at
+        mocklogs.append(mocklog.copy())
+
+    with patch.object(closer, "_get_newest_log_entry", side_effect=mocklogs):
+
+        results = closer._isolate_inactive_incidents(mock_incidents)
+
+    assert len(results) == 1
+    assert results[0].incident_number == 4

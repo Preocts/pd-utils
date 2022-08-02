@@ -100,6 +100,25 @@ class CloseOldIncidents:
 
         return nonpriority_incidents
 
+    def _isolate_inactive_incidents(self, incidents: list[Incident]) -> list[Incident]:
+        """Isolate inactive incidents from list of incidents."""
+        inactive_incidents: list[Incident] = []
+
+        for idx, incident in enumerate(incidents):
+            if idx % 100 == 0:
+                self.log.info("Checking incident %s to %s", idx, idx + 100)
+
+            lst_log = self._get_newest_log_entry(incident.incident_id)
+            seconds = DateTool.to_seconds(NOW.isoformat(), lst_log["created_at"])
+            print(seconds)
+
+            if seconds > self._close_after_seconds:
+                self.log.debug("Incident %s has no activity", incident.incident_number)
+                inactive_incidents.append(incident)
+        self.log.info("Isolated %s inactive incidents", len(inactive_incidents))
+
+        return inactive_incidents
+
     # TODO: preocts - Reused code - This needs to be extracted into a helper
     def _get_all_incidents(self) -> list[Incident]:
         """Pull all open incidents from PagerDuty."""
