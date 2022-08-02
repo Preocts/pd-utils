@@ -189,7 +189,39 @@ def test_save_file(
 
     try:
         client._write_file(mock_incidents, mock_filename)
+
         assert filecheck.exists()
 
     finally:
         filecheck.unlink(True)
+
+
+def test_empty_save(monkeypatch: MonkeyPatch) -> None:
+    now = datetime.datetime(1999, 12, 25, 13, 50, 30, 0)
+    mock_dt = MagicMock(now=MagicMock(return_value=now))
+    monkeypatch.setattr(close_old_incidents.datetime, "datetime", mock_dt)
+    mock_filename = "temp_save_test"
+    filecheck = Path(f"{mock_filename}-{now.strftime('%Y%m%d-%H%M')}.csv")
+    client = close_old_incidents.CloseOldIncidents("mock", "mock")
+
+    try:
+        client._write_file([], mock_filename)
+
+        assert not filecheck.exists()
+
+    finally:
+        filecheck.unlink(True)
+
+
+def test_load_file(closer: CloseOldIncidents) -> None:
+    writefile = Path("temp_load_test.csv")
+    with writefile.open("w") as outfile:
+        outfile.write(MOCK_REPORT)
+
+    try:
+        result = closer._load_input_file(str(writefile))
+
+        assert len(result) == 4
+
+    finally:
+        writefile.unlink(True)
