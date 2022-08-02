@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import datetime
 import json
 from pathlib import Path
 from typing import Any
+from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 from httpx import Response
 
 from pd_utils import close_old_incidents
@@ -20,6 +23,17 @@ EXPECTED_IDS = {"Q36LM3UBN4V94O", "Q3YH44AL350A23"}
 
 LOG_ENTRIES_RESP = Path("tests/fixture/close-incidents/logentry.json").read_text()
 EXPECTED_LOG_ID = "R15HMGZ64N39C61067KAZ68JIN"
+
+# Built from the mock objects in fixture mock_incidents()
+MOCK_REPORT = "\n".join(
+    [
+        "incident_id,incident_number,title,created_at,status,last_status_change_at,has_priority,urgency",  # noqa: E501
+        "a,1,New,2022-08-02T02:33:35Z,triggered,2022-08-02T02:33:35Z,True,high",
+        "b,4,Old,2022-08-12T02:34:35Z,triggered,2022-08-12T02:34:35Z,False,high",
+        "c,2,Mid,2022-08-07T02:33:35Z,acknowledged,2022-08-07T02:33:35Z,True,low",
+        "d,3,Cusp,2022-08-11T03:31:35Z,acknowledged,2022-08-11T03:31:35Z,False,low",
+    ]
+)
 
 
 @pytest.fixture
@@ -160,3 +174,22 @@ def test_main_optional_args() -> None:
         "close_active": True,
         "close_priority": True,
     }
+
+
+def test_save_file(
+    mock_incidents: list[Incident],
+    monkeypatch: MonkeyPatch,
+) -> None:
+    now = datetime.datetime(1999, 12, 25, 13, 50, 30, 0)
+    mock_dt = MagicMock(now=MagicMock(return_value=now))
+    monkeypatch.setattr(close_old_incidents.datetime, "datetime", mock_dt)
+    mock_filename = "temp_save_test"
+    filecheck = Path(f"{mock_filename}-{now.strftime('%Y%m%d-%H%M')}.csv")
+    client = close_old_incidents.CloseOldIncidents("mock", "mock")
+
+    try:
+        client._write_file(mock_incidents, mock_filename)
+        assert filecheck.exists()
+
+    finally:
+        filecheck.unlink(True)
