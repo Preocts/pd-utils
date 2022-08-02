@@ -11,6 +11,7 @@
   - [Command line scripts:](#command-line-scripts)
 - [Available scripts](#available-scripts)
   - [Coverage Gap Report](#coverage-gap-report)
+  - [Close Old Incidents](#close-old-incidents)
   - [Safelist Gatherer](#safelist-gatherer)
   - [Simple Alert](#simple-alert)
 - [Local developer installation](#local-developer-installation)
@@ -121,6 +122,48 @@ P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,1
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",False,True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,3,"('Preocts Full Coverage',)","('P4TPEME',)",False,True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,4,"('Preocts Coverage Gaps',)","('PG3MDI8',)",False,False
+```
+
+---
+
+## Close Old Incidents
+
+A tool created to enforce the maximum age of incidents on a large scale
+implementation of PagerDuty. Runs in two steps:
+
+1. First run scans PagerDuty for incidents that match the critiria for
+   auto-closing
+2. Second run requires inputfile generated from first run and closes incidents
+
+Default Critiria:
+
+- Any incident *older* than 10 days
+- AND, does not have any activy in logs within last 10 days
+- AND, does not have a Priority assigned
+
+**Note: This scripts requires read/write to PagerDuty and performs an action
+that cannot be reversed. Once an incident is closed it cannot be reopened.**
+
+```shell
+usage: close-old-incidents [-h] [--token TOKEN] [--email EMAIL] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--inputfile INPUTFILE] [--close-after-days CLOSE_AFTER_DAYS]
+                           [--close-active] [--close-priority]
+
+Pagerduty command line utilities.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
+  --email EMAIL         PagerDuty Email (default: $PAGERDUTY_EMAIL)
+  --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Logging level (default: $LOGGING_LEVEL | INFO)
+  --inputfile INPUTFILE
+                        Provide a csv file to work from. If not provided a new file will be created.
+  --close-after-days CLOSE_AFTER_DAYS
+                        Incidents older than this are considered for closing (default: 10)
+  --close-active        When present, old incidents are closed regardless of activity
+  --close-priority      When present, consider incidents with priority for closing
+
+See: https://github.com/Preocts/pagerduty-utils
 ```
 
 ---

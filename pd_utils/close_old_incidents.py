@@ -225,7 +225,7 @@ def main(args_in: list[str] | None = None) -> int:
     runtime.add_argument(
         flag="--close-after-days",
         default="10",
-        help_="Incidents older than this are considered for closing",
+        help_="Incidents older than this are considered for closing (default: 10)",
     )
     runtime.parser.add_argument(
         "--close-active",
