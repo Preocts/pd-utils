@@ -225,3 +225,17 @@ def test_load_file(closer: CloseOldIncidents) -> None:
 
     finally:
         writefile.unlink(True)
+
+
+def test_run_empty_results(closer: CloseOldIncidents) -> None:
+    resp = Response(200, content='{"incidents": [], "more": false}')
+    with patch.object(closer._http, "get", return_value=resp):
+        closer.run()
+
+
+def test_run_empty_file(closer: CloseOldIncidents) -> None:
+    with patch.object(closer, "_load_input_file", return_value=[]) as mocked:
+        closer.run("mock_file")
+
+        assert mocked.call_count == 1
+        mocked.assert_called_with("mock_file")
