@@ -25,6 +25,22 @@ def closer() -> CloseOldIncidents:
     return CloseOldIncidents("mock", "mock")
 
 
+@pytest.fixture
+def mock_incidents() -> list[Incident]:
+    now = DateTool.utcnow_isotime()
+    days5 = DateTool.add_offset(now, days=5)
+    days10 = DateTool.add_offset(now, days=9, minutes=58)
+    old = DateTool.add_offset(now, days=10, minutes=1)
+    incs = [
+        Incident("a", 1, "New", now, "triggered", now, True, "high"),
+        Incident("b", 4, "Old", old, "triggered", old, False, "high"),
+        Incident("c", 2, "Mid", days5, "acknowledged", days5, True, "low"),
+        Incident("d", 3, "Cusp", days10, "acknowledged", days10, False, "low"),
+    ]
+
+    return incs
+
+
 def test_get_all_incidents(closer: CloseOldIncidents) -> None:
     resps = json.loads(INCIDENTS_RESP)
     resp = [Response(200, content=json.dumps(r)) for r in resps]
@@ -64,19 +80,21 @@ def test_get_newest_log_entry_error(closer: CloseOldIncidents) -> None:
             closer._get_newest_log_entry("mock")
 
 
-def test_isolate_old_incidents(closer: CloseOldIncidents) -> None:
-    now = DateTool.utcnow_isotime()
-    days5 = DateTool.add_offset(now, days=5)
-    days10 = DateTool.add_offset(now, days=9, minutes=58)
-    old = DateTool.add_offset(now, days=10, minutes=1)
-    incs = [
-        Incident("a", 1, "", now, "", "", False, ""),
-        Incident("b", 4, "", old, "", "", False, ""),
-        Incident("c", 2, "", days5, "", "", False, ""),
-        Incident("d", 3, "", days10, "", "", False, ""),
-    ]
-
-    results = closer._isolate_old_incidents(incs)
+def test_isolate_old_incidents(
+    closer: CloseOldIncidents,
+    mock_incidents: list[Incident],
+) -> None:
+    results = closer._isolate_old_incidents(mock_incidents)
 
     assert len(results) == 1
     assert results[0].incident_number == 4
+
+
+def test_isolate_nonpriority_incidents(
+    closer: CloseOldIncidents,
+    mock_incidents: list[Incident],
+) -> None:
+    results = closer._isolate_nonpriority_incidents(mock_incidents)
+
+    assert len(results) == 2
+    assert results[0].has_priority is False

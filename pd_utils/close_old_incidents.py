@@ -77,7 +77,7 @@ class CloseOldIncidents:
         self._close_priority = close_priority
 
     def _isolate_old_incidents(self, incidents: list[Incident]) -> list[Incident]:
-        """Isolate old incidents from internal list of incidents."""
+        """Isolate old incidents from list of incidents."""
         old_incidents: list[Incident] = []
         for incident in incidents:
             delta = DateTool.to_seconds(NOW.isoformat(), incident.created_at)
@@ -86,6 +86,19 @@ class CloseOldIncidents:
         self.log.info("Isolated %s old incidents", len(old_incidents))
 
         return old_incidents
+
+    def _isolate_nonpriority_incidents(
+        self,
+        incidents: list[Incident],
+    ) -> list[Incident]:
+        """Isolate nonpriority incidents from list of incidents."""
+        nonpriority_incidents: list[Incident] = []
+        for incident in incidents:
+            if not incident.has_priority:
+                nonpriority_incidents.append(incident)
+        self.log.info("Isolated %s nonpriority incidents", len(nonpriority_incidents))
+
+        return nonpriority_incidents
 
     # TODO: preocts - Reused code - This needs to be extracted into a helper
     def _get_all_incidents(self) -> list[Incident]:
