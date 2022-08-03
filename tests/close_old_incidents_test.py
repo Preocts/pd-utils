@@ -226,20 +226,6 @@ def test_load_file(closer: CloseOldIncidents) -> None:
         writefile.unlink(True)
 
 
-def test_run_empty_results(closer: CloseOldIncidents) -> None:
-    resp = Response(200, content='{"incidents": [], "more": false}')
-    with patch.object(closer._http, "get", return_value=resp):
-        closer.run()
-
-
-def test_run_empty_file(closer: CloseOldIncidents) -> None:
-    with patch.object(closer, "_load_input_file", return_value=[]) as mocked:
-        closer.run("mock_file")
-
-        assert mocked.call_count == 1
-        mocked.assert_called_with("mock_file")
-
-
 @pytest.mark.parametrize(("status", "expect"), ((200, True), (400, False)))
 def test_resolve_incident(status: int, expect: bool, closer: CloseOldIncidents) -> None:
     resps = [Response(status)]
@@ -274,3 +260,29 @@ def test_close_incidents(
 
     assert len(success) == 2
     assert len(error) == 2
+
+
+def test_run_empty_results(closer: CloseOldIncidents) -> None:
+    resp = Response(200, content='{"incidents": [], "more": false}')
+    with patch.object(closer._http, "get", return_value=resp) as http:
+        closer.run()
+
+        assert http.call_count == 1
+
+
+def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
+    closer._close_active = True
+    resp = Response(200, content='{"incidents": [], "more": false}')
+    with patch.object(closer._http, "get", return_value=resp):
+        with patch.object(closer, "_isolate_inactive_incidents") as avoid:
+            closer.run()
+
+            avoid.assert_not_called()
+
+
+def test_run_empty_file(closer: CloseOldIncidents) -> None:
+    with patch.object(closer, "_load_input_file", return_value=[]) as mocked:
+        closer.run("mock_file")
+
+        assert mocked.call_count == 1
+        mocked.assert_called_with("mock_file")
