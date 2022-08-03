@@ -44,9 +44,9 @@ def closer() -> CloseOldIncidents:
 @pytest.fixture
 def mock_incidents() -> list[Incident]:
     now = DateTool.utcnow_isotime()
-    days5 = DateTool.add_offset(now, days=5)
-    days10 = DateTool.add_offset(now, days=9, minutes=58)
-    old = DateTool.add_offset(now, days=10, minutes=1)
+    days5 = DateTool.add_offset(now, days=-5)
+    days10 = DateTool.add_offset(now, days=-9, minutes=-58)
+    old = DateTool.add_offset(now, days=-10, minutes=-1)
     incs = [
         Incident("a", 1, "New", now, "triggered", now, True, "high"),
         Incident("b", 4, "Old", old, "triggered", old, False, "high"),
