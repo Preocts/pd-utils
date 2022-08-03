@@ -170,6 +170,7 @@ class CloseOldIncidents:
             "statuses[]": ["triggered", "acknowledged"],
             "offset": 0,
             "limit": self._max_query_limit,
+            "date_range": "all",
         }
         incidents: list[dict[str, Any]] = []
 
