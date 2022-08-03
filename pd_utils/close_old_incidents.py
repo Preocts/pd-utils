@@ -13,7 +13,7 @@ from pd_utils.model import Incident
 from pd_utils.util import DateTool
 from pd_utils.util import RuntimeInit
 
-
+TITLE_TAG = "[closed by automation]"
 NOW = datetime.datetime.utcnow()
 
 
@@ -121,7 +121,8 @@ class CloseOldIncidents:
         """Isolate old incidents from list of incidents."""
         old_incidents: list[Incident] = []
         for incident in incidents:
-            delta = DateTool.to_seconds(NOW.isoformat(), incident.created_at)
+            delta = DateTool.to_seconds(incident.created_at, NOW.isoformat())
+
             if delta > self._close_after_seconds:
                 old_incidents.append(incident)
         self.log.info("Isolated %s old incidents", len(old_incidents))
@@ -135,7 +136,7 @@ class CloseOldIncidents:
         """Isolate nonpriority incidents from list of incidents."""
         nonpriority_incidents: list[Incident] = []
         for incident in incidents:
-            if not incident.has_priority:
+            if not incident.has_priority or self._close_priority:
                 nonpriority_incidents.append(incident)
         self.log.info("Isolated %s nonpriority incidents", len(nonpriority_incidents))
 
@@ -150,8 +151,7 @@ class CloseOldIncidents:
                 self.log.info("Checking incident %s to %s", idx, idx + 100)
 
             lst_log = self._get_newest_log_entry(incident.incident_id)
-            seconds = DateTool.to_seconds(NOW.isoformat(), lst_log["created_at"])
-            print(seconds)
+            seconds = DateTool.to_seconds(lst_log["created_at"], NOW.isoformat())
 
             if seconds > self._close_after_seconds:
                 self.log.debug("Incident %s has no activity", incident.incident_number)
@@ -210,6 +210,38 @@ class CloseOldIncidents:
             raise QueryError("Unexpected error")
 
         return resp.json()["log_entries"][0]
+
+    def _close_incidents(
+        self,
+        incidents: list[Incident],
+    ) -> tuple[list[Incident], list[Incident]]:
+        """Close incidents provided. Returns Success list and Error list."""
+        self.log.info("Start close actions on %d incidents.", len(incidents))
+        success: list[Incident] = []
+        error: list[Incident] = []
+        for incident in incidents:
+            self.log.debug("Closing incident %s", incident.incident_number)
+            if self._resolve_incident(incident.incident_id, incident.title):
+                success.append(incident)
+            else:
+                error.append(incident)
+
+        return success, error
+
+    def _resolve_incident(self, incident_id: str, title: str) -> bool:
+        """Mark incident resolved while updated title to include TITLE_TAG."""
+        payload = {
+            "incident": {
+                "type": "incident_reference",
+                "status": "resolved",
+                "title": f"{TITLE_TAG} {title}",
+            }
+        }
+        url = f"{self.base_url}/incidents/{incident_id}"
+        resp = self._http.put(url=url, json=payload)
+        if not resp.is_success:
+            self.log.error("Error resolving incident: %s, '%s'", incident_id, resp.text)
+        return resp.is_success
 
 
 def main(args_in: list[str] | None = None) -> int:

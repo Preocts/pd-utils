@@ -165,7 +165,6 @@ def test_main_optional_args() -> None:
             ]
         )
         kwargs = mockclass.call_args.kwargs
-        print(mockclass.call_args.kwargs)
 
     assert kwargs == {
         "token": "mock",
@@ -239,3 +238,39 @@ def test_run_empty_file(closer: CloseOldIncidents) -> None:
 
         assert mocked.call_count == 1
         mocked.assert_called_with("mock_file")
+
+
+@pytest.mark.parametrize(("status", "expect"), ((200, True), (400, False)))
+def test_resolve_incident(status: int, expect: bool, closer: CloseOldIncidents) -> None:
+    resps = [Response(status)]
+    incident_id = "123"
+    title = "This is a test"
+    expected_title = f"{close_old_incidents.TITLE_TAG} {title}"
+    with patch.object(closer._http, "put", side_effect=resps) as http:
+
+        result = closer._resolve_incident(incident_id, title)
+        kwargs = http.call_args.kwargs
+
+    assert incident_id in kwargs["url"]
+    assert kwargs["json"]["incident"]["status"] == "resolved"
+    assert kwargs["json"]["incident"]["title"] == expected_title
+    assert result is expect
+
+
+def test_close_incidents(
+    closer: CloseOldIncidents,
+    mock_incidents: list[Incident],
+) -> None:
+    resps = [
+        Response(200),
+        Response(400),
+        Response(200),
+        Response(400),
+    ]
+
+    with patch.object(closer._http, "put", side_effect=resps):
+
+        success, error = closer._close_incidents(mock_incidents)
+
+    assert len(success) == 2
+    assert len(error) == 2
