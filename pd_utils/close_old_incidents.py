@@ -77,23 +77,24 @@ class CloseOldIncidents:
             to_close = self._load_input_file(inputfile)
             self.log.info("Read %s inactives, starting actions", len(to_close))
 
-            # self._close_incidents(to_close)
+            successes, errors = self._close_incidents(to_close)
 
-            # self._write_file("close-old-incidents", self._incidents)
-            # self._write_file("close-old-incidents-errors", self._errors)
+            self._write_file(successes, "close-old-incidents")
+            self._write_file(errors, "close-old-incidents-errors")
 
         else:
             self.log.info("Pulling incidents from PagerDuty, this can take a while")
             all_incidents = self._get_all_incidents()
             self.log.info("Found %s open incidents", len(all_incidents))
 
-            isolated_incidents = self._isolate_old_incidents(all_incidents)
-            isolated_incidents = self._isolate_nonpriority_incidents(isolated_incidents)
+            isolated = self._isolate_old_incidents(all_incidents)
+            isolated = self._isolate_nonpriority_incidents(isolated)
 
             # Inactive scanning requires additional calls to PD, run last
-            isolated_incidents = self._isolate_inactive_incidents(isolated_incidents)
+            if not self._close_active:
+                isolated = self._isolate_inactive_incidents(isolated)
 
-            self._write_file(isolated_incidents, "close-old-incidents-preview")
+            self._write_file(isolated, "close-old-incidents-preview")
 
     def _load_input_file(self, inputfile: str) -> list[Incident]:
         """Load input file."""
