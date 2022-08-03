@@ -166,6 +166,36 @@ optional arguments:
 See: https://github.com/Preocts/pagerduty-utils
 ```
 
+Example use: Polling for incidents older than 5 days without priority or activity
+
+Command: `close-old-incidents --token [API_TOKEN] --email [EMAIL] --close-after-days 5`
+
+```shell
+(venv) preocts @ Preocts ~/pd-utils (preocts-close-incidents)
+└─▶ $ close-old-incidents --token [API_TOKEN] --email [EMAIL] --close-after-days 5
+2022-08-02 22:14:25,261 - INFO - close_old_incidents - Pulling incidents from PagerDuty, this can take a while
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Discovered 2 incidents.
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Found 2 open incidents
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Isolated 2 old incidents
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Isolated 1 nonpriority incidents
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Checking incident 0 to 100
+2022-08-02 22:14:25,914 - INFO - close_old_incidents - Isolated 1 inactive incidents
+2022-08-02 22:14:25,915 - INFO - close_old_incidents - Wrote 1 rows to close-old-incidents-preview-20220802-2214.csv
+```
+
+Example use: Closing incidents found in above step
+
+Command `close-old-incidents --token [API_TOKEN] --email [EMAIL] --inputfile close-old-incidents-preview-20220802-2214.csv`
+
+```shell
+(venv) preocts @ Preocts ~/pd-utils (preocts-close-incidents)
+└─▶ $ close-old-incidents --token [API_TOKEN] --email [EMAIL] --inputfile close-old-incidents-preview-20220802-2214.csv
+2022-08-02 22:18:10,383 - INFO - close_old_incidents - Reading input file: close-old-incidents-preview-20220802-2214.csv
+2022-08-02 22:18:10,383 - INFO - close_old_incidents - Read 1 inactives, starting actions
+2022-08-02 22:18:10,384 - INFO - close_old_incidents - Start close actions on 1 incidents.
+2022-08-02 22:18:11,247 - INFO - close_old_incidents - Wrote 1 rows to close-old-incidents-20220802-2218.csv
+```
+
 ---
 
 ## Safelist Gatherer
