@@ -1,0 +1,43 @@
+{
+    "log_entries": [
+        {
+            "id": "R15HMGZ64N39C61067KAZ68JIN",
+            "type": "annotate_log_entry",
+            "summary": "Note added by Preocts.",
+            "self": "https://api.pagerduty.com/log_entries/R15HMGZ64N39C61067KAZ68JIN",
+            "html_url": null,
+            "created_at": "2022-08-01T03:10:19Z",
+            "agent": {
+                "id": "PSIUGWW",
+                "type": "user_reference",
+                "summary": "Preocts",
+                "self": "https://api.pagerduty.com/users/PSIUGWW",
+                "html_url": "https://preocts.pagerduty.com/users/PSIUGWW"
+            },
+            "channel": {
+                "type": "note",
+                "summary": "Something something note"
+            },
+            "service": {
+                "id": "PIF0WEL",
+                "type": "service_reference",
+                "summary": "Testing service",
+                "self": "https://api.pagerduty.com/services/PIF0WEL",
+                "html_url": "https://preocts.pagerduty.com/service-directory/PIF0WEL"
+            },
+            "incident": {
+                "id": "Q3YH44AL350A23",
+                "type": "incident_reference",
+                "summary": "[#4] This has priority",
+                "self": "https://api.pagerduty.com/incidents/Q3YH44AL350A23",
+                "html_url": "https://preocts.pagerduty.com/incidents/Q3YH44AL350A23"
+            },
+            "teams": [],
+            "contexts": []
+        }
+    ],
+    "limit": 1,
+    "offset": 0,
+    "more": true,
+    "total": null
+}

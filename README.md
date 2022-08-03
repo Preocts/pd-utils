@@ -11,6 +11,7 @@
   - [Command line scripts:](#command-line-scripts)
 - [Available scripts](#available-scripts)
   - [Coverage Gap Report](#coverage-gap-report)
+  - [Close Old Incidents](#close-old-incidents)
   - [Safelist Gatherer](#safelist-gatherer)
   - [Simple Alert](#simple-alert)
 - [Local developer installation](#local-developer-installation)
@@ -121,6 +122,78 @@ P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,1
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,2,"('Morning shift', 'Late shift no gap')","('PQ1AJP1', 'PRZTRI8')",False,True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,3,"('Preocts Full Coverage',)","('P4TPEME',)",False,True
 P46S1RA,Mind the gap,https://preocts.pagerduty.com/escalation_policies/P46S1RA,4,"('Preocts Coverage Gaps',)","('PG3MDI8',)",False,False
+```
+
+---
+
+## Close Old Incidents
+
+A tool created to enforce the maximum age of incidents on a large scale
+implementation of PagerDuty. Runs in two steps:
+
+1. First run scans PagerDuty for incidents that match the critiria for
+   auto-closing
+2. Second run requires inputfile generated from first run and closes incidents
+
+Default Critiria:
+
+- Any incident *older* than 10 days
+- AND, does not have any activy in logs within last 10 days
+- AND, does not have a Priority assigned
+
+**Note: This scripts requires read/write to PagerDuty and performs an action
+that cannot be reversed. Once an incident is closed it cannot be reopened.**
+
+```shell
+usage: close-old-incidents [-h] [--token TOKEN] [--email EMAIL] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--inputfile INPUTFILE] [--close-after-days CLOSE_AFTER_DAYS]
+                           [--close-active] [--close-priority]
+
+Pagerduty command line utilities.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
+  --email EMAIL         PagerDuty Email (default: $PAGERDUTY_EMAIL)
+  --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Logging level (default: $LOGGING_LEVEL | INFO)
+  --inputfile INPUTFILE
+                        Provide a csv file to work from. If not provided a new file will be created.
+  --close-after-days CLOSE_AFTER_DAYS
+                        Incidents older than this are considered for closing (default: 10)
+  --close-active        When present, old incidents are closed regardless of activity
+  --close-priority      When present, consider incidents with priority for closing
+
+See: https://github.com/Preocts/pagerduty-utils
+```
+
+Example use: Polling for incidents older than 5 days without priority or activity
+
+Command: `close-old-incidents --token [API_TOKEN] --email [EMAIL] --close-after-days 5`
+
+```shell
+(venv) preocts @ Preocts ~/pd-utils (preocts-close-incidents)
+└─▶ $ close-old-incidents --token [API_TOKEN] --email [EMAIL] --close-after-days 5
+2022-08-02 22:14:25,261 - INFO - close_old_incidents - Pulling incidents from PagerDuty, this can take a while
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Discovered 2 incidents.
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Found 2 open incidents
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Isolated 2 old incidents
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Isolated 1 nonpriority incidents
+2022-08-02 22:14:25,759 - INFO - close_old_incidents - Checking incident 0 to 100
+2022-08-02 22:14:25,914 - INFO - close_old_incidents - Isolated 1 inactive incidents
+2022-08-02 22:14:25,915 - INFO - close_old_incidents - Wrote 1 rows to close-old-incidents-preview-20220802-2214.csv
+```
+
+Example use: Closing incidents found in above step
+
+Command `close-old-incidents --token [API_TOKEN] --email [EMAIL] --inputfile close-old-incidents-preview-20220802-2214.csv`
+
+```shell
+(venv) preocts @ Preocts ~/pd-utils (preocts-close-incidents)
+└─▶ $ close-old-incidents --token [API_TOKEN] --email [EMAIL] --inputfile close-old-incidents-preview-20220802-2214.csv
+2022-08-02 22:18:10,383 - INFO - close_old_incidents - Reading input file: close-old-incidents-preview-20220802-2214.csv
+2022-08-02 22:18:10,383 - INFO - close_old_incidents - Read 1 inactives, starting actions
+2022-08-02 22:18:10,384 - INFO - close_old_incidents - Start close actions on 1 incidents.
+2022-08-02 22:18:11,247 - INFO - close_old_incidents - Wrote 1 rows to close-old-incidents-20220802-2218.csv
 ```
 
 ---

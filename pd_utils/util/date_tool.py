@@ -12,6 +12,19 @@ class DateTool:
         return date_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @staticmethod
+    def to_datetime(isotime: str) -> datetime:
+        """Covert PD formated iso time to unaware datetime."""
+        return datetime.fromisoformat(isotime.rstrip("Z"))
+
+    @staticmethod
+    def to_seconds(start: str, end: str) -> int:
+        """Find the number of seconds between two PD formated iso times."""
+        start_ = DateTool.to_datetime(start)
+        end_ = DateTool.to_datetime(end)
+        delta = end_ - start_
+        return delta.days * 86_400 + delta.seconds
+
+    @staticmethod
     def add_offset(
         isotime: str,
         *,

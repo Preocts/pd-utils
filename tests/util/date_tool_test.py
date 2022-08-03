@@ -26,6 +26,13 @@ def test_to_isotime() -> None:
     assert result == MOCK_ISO
 
 
+def test_to_datetime() -> None:
+    result = DateTool.to_datetime(MOCK_ISO)
+
+    assert result == MOCK_NOW
+    assert result.tzinfo is None
+
+
 def test_utcnow_isotime(patch_datetime_utcnow: None) -> None:
 
     result = date_tool.DateTool.utcnow_isotime()
@@ -61,6 +68,10 @@ def test_add_offset() -> None:
                 ("2022-07-29T04:18:19Z", "2022-07-29T12:00:00Z"),
             ],
             True,
+        ),
+        (
+            [],
+            False,
         ),
     ),
 )
@@ -117,6 +128,12 @@ def test_is_gapless(time_slots: list[tuple[str, str]], expected: bool) -> None:
             "2022-08-01T00:00:00Z",
             True,
         ),
+        (  # Test: Edge case, this actually should never happen
+            [],
+            "2022-07-29T04:18:19Z",
+            "2022-08-01T00:00:00Z",
+            False,
+        ),
     ),
 )
 def test_is_covered(
@@ -128,8 +145,17 @@ def test_is_covered(
     assert DateTool.is_covered(time_slots, start, stop) is expected
 
 
-def test_is_gapless_empty_list() -> None:
-    # Edge case
-    result = DateTool._is_gapless([])
+@pytest.mark.parametrize(
+    ("from_", "to_", "expected"),
+    (
+        ("2022-12-25T13:50:30Z", "2022-12-25T13:51:00Z", 30),
+        ("2022-12-25T13:50:30Z", "2022-12-26T13:49:30Z", 86_340),
+        ("2022-12-25T13:50:30Z", "2022-12-26T13:51:30Z", 86_460),
+        ("2022-12-25T13:50:30Z", "2022-12-26T13:50:30Z", 86_400),
+        ("2022-12-25T13:50:30Z", "2022-12-25T13:50:30Z", 0),
+    ),
+)
+def test_to_seconds(from_: str, to_: str, expected: int) -> None:
+    result = DateTool.to_seconds(from_, to_)
 
-    assert result is False
+    assert result == expected
