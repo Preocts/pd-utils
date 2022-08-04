@@ -14,3 +14,4 @@ __pycache__/
 # Script outputs
 schedule_gap_report*
 escalation_rule_gap_report*
+close-old-incidents-*.csv

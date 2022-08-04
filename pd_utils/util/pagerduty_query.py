@@ -95,8 +95,8 @@ class PagerDutyQuery:
             self.log.error("Unexpected error: %s", resp.text)
             raise self.QueryError("Unexpected error")
 
-        more_: bool = resp.json()["more"]
-        total_: int = resp.json()["total"] or 0
+        more_: bool = resp.json().get("more") or False
+        total_: int = resp.json().get("total") or 0
 
         self.log.debug("Pulled %d objects.", len(resp.json()[self.object_name]))
 
