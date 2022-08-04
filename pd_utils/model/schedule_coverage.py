@@ -3,9 +3,11 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
+from pd_utils.model.base import Base
 
-@dataclasses.dataclass(frozen=True)
-class ScheduleCoverage:
+
+@dataclasses.dataclass
+class ScheduleCoverage(Base):
     pd_id: str
     name: str
     html_url: str
@@ -26,7 +28,3 @@ class ScheduleCoverage:
             coverage=final.get("rendered_coverage_percentage") or 0.0,
             entries=tuple(entries),
         )
-
-    def as_dict(self) -> dict[str, Any]:
-        """Render model as dict."""
-        return dataclasses.asdict(self)

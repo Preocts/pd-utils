@@ -12,10 +12,8 @@ def test_model() -> None:
     resp = json.loads(SCHEDULE)
 
     model = ScheduleCoverage.build_from(resp)
-    dct = model.as_dict()
 
     assert model.coverage == 97.9
-    assert dct["coverage"] == 97.9
     assert model.name == "Preocts Coverage Gaps"
     assert model.pd_id == "PG3MDI8"
     assert len(model.entries) == 15

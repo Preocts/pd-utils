@@ -3,9 +3,11 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
+from pd_utils.model.base import Base
+
 
 @dataclasses.dataclass
-class Incident:
+class Incident(Base):
     incident_id: str
     incident_number: int
     title: str
@@ -28,7 +30,3 @@ class Incident:
             has_priority=bool(resp["priority"]),
             urgency=resp["urgency"],
         )
-
-    def as_dict(self) -> dict[str, Any]:
-        """Convert object to dictionary."""
-        return dataclasses.asdict(self)

@@ -12,9 +12,7 @@ def test_model() -> None:
     resp = json.loads(EP_POLICIES)[0]["escalation_policies"][0]
 
     models = EscalationRuleCoverage.build_from(resp)
-    dct = models[0].as_dict()
 
     assert models[0].policy_name == "Mind the gap"
     assert len(models) == 4
     assert models[0].rule_target_ids == ("PQ1AJP1", "PA82FR2")
-    assert dct["policy_id"] == "P46S1RA"
