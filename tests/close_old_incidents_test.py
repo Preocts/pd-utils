@@ -13,10 +13,8 @@ from httpx import Response
 
 from pd_utils import close_old_incidents
 from pd_utils.close_old_incidents import CloseOldIncidents
-from pd_utils.close_old_incidents import QueryError
 from pd_utils.model import Incident
 from pd_utils.util import DateTool
-
 
 INCIDENTS_RESP = Path("tests/fixture/close-incidents/incidents.json").read_text()
 EXPECTED_IDS = {"Q36LM3UBN4V94O", "Q3YH44AL350A23"}
@@ -57,43 +55,28 @@ def mock_incidents() -> list[Incident]:
     return incs
 
 
+def test_get_newest_log_entry(closer: CloseOldIncidents) -> None:
+    mock_resp = json.loads(LOG_ENTRIES_RESP)["log_entries"][0]
+    resp = [([mock_resp], None, None)]
+
+    with patch.object(closer._query, "run", side_effect=resp) as mockrun:
+
+        results = closer._get_newest_log_entry("mock")
+
+    assert mockrun.call_count == 1
+    assert results["id"] == EXPECTED_LOG_ID
+
+
 def test_get_all_incidents(closer: CloseOldIncidents) -> None:
     resps = json.loads(INCIDENTS_RESP)
     resp = [Response(200, content=json.dumps(r)) for r in resps]
 
-    with patch.object(closer._http, "get", side_effect=resp) as mockhttp:
+    with patch.object(closer._query._http, "get", side_effect=resp) as mockhttp:
 
         results = closer._get_all_incidents()
 
     assert mockhttp.call_count == 2
     assert not {i.incident_id for i in results} - EXPECTED_IDS
-
-
-def test_get_all_incidents_error(closer: CloseOldIncidents) -> None:
-    resp = [Response(404, content="Not Found")]
-
-    with patch.object(closer._http, "get", side_effect=resp):
-        with pytest.raises(QueryError):
-            closer._get_all_incidents()
-
-
-def test_get_newest_log_entry(closer: CloseOldIncidents) -> None:
-    resp = [Response(200, content=LOG_ENTRIES_RESP)]
-
-    with patch.object(closer._http, "get", side_effect=resp) as mockhttp:
-
-        results = closer._get_newest_log_entry("mock")
-
-    assert mockhttp.call_count == 1
-    assert results["id"] == EXPECTED_LOG_ID
-
-
-def test_get_newest_log_entry_error(closer: CloseOldIncidents) -> None:
-    resp = [Response(404, content="Not Found")]
-
-    with patch.object(closer._http, "get", side_effect=resp):
-        with pytest.raises(QueryError):
-            closer._get_newest_log_entry("mock")
 
 
 def test_isolate_old_incidents(
@@ -264,7 +247,8 @@ def test_close_incidents(
 
 def test_run_empty_results(closer: CloseOldIncidents) -> None:
     resp = Response(200, content='{"incidents": [], "more": false}')
-    with patch.object(closer._http, "get", return_value=resp) as http:
+    # with patch.object(closer._http, "get", return_value=resp) as http:
+    with patch.object(closer._query._http, "get", return_value=resp) as http:
         closer.run()
 
         assert http.call_count == 1
@@ -273,7 +257,8 @@ def test_run_empty_results(closer: CloseOldIncidents) -> None:
 def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
     closer._close_active = True
     resp = Response(200, content='{"incidents": [], "more": false}')
-    with patch.object(closer._http, "get", return_value=resp):
+    with patch.object(closer._query._http, "get", return_value=resp):
+        # with patch.object(closer._http, "get", return_value=resp):
         with patch.object(closer, "_isolate_inactive_incidents") as avoid:
             closer.run()
 

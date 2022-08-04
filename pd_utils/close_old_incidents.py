@@ -11,6 +11,7 @@ import httpx
 
 from pd_utils.model import Incident
 from pd_utils.util import DateTool
+from pd_utils.util import PagerDutyQuery
 from pd_utils.util import RuntimeInit
 
 TITLE_TAG = "[closed by automation]"
@@ -26,10 +27,6 @@ class IncidentRow(TypedDict):
     opened_at: str
     last_status_update_at: str
     age_in_days: int
-
-
-class QueryError(Exception):
-    ...
 
 
 class CloseOldIncidents:
@@ -65,6 +62,7 @@ class CloseOldIncidents:
         }
 
         self._http = httpx.Client(headers=headers)
+        self._query = PagerDutyQuery(token, email)
         self._max_query_limit = 100
         self._close_after_seconds = close_after_days * 86_400
         self._close_active = close_active
@@ -161,57 +159,32 @@ class CloseOldIncidents:
 
         return inactive_incidents
 
-    # TODO: preocts - Reused code - This needs to be extracted into a helper
     def _get_all_incidents(self) -> list[Incident]:
         """Pull all open incidents from PagerDuty."""
-        more = True
-        params: dict[str, Any] = {
+        params = {
             "time_zone": "UTC",
             "statuses[]": ["triggered", "acknowledged"],
-            "offset": 0,
-            "limit": self._max_query_limit,
             "date_range": "all",
         }
+        self._query.set_query_target("/incidents", "incidents")
+        self._query.set_query_params(params)
+
         incidents: list[dict[str, Any]] = []
-
-        while more:
-            self.log.debug("List incidents: %s", params)
-            resp = self._http.get(f"{self.base_url}/incidents", params=params)
-
-            if not resp.is_success:
-                self.log.error("Unexpected error: %s", resp.text)
-                raise QueryError("Unexpected error")
-
-            incidents.extend(resp.json()["incidents"])
-
-            params["offset"] += self._max_query_limit
-            more = resp.json()["more"]
+        for resp in self._query.run_iter(self._max_query_limit):
+            incidents.extend(resp)
 
         self.log.info("Discovered %d incidents.", len(incidents))
-
         return [Incident.build_from(incident) for incident in incidents]
 
-    # TODO: preocts - Reused code - This needs to be extracted into a helper
     def _get_newest_log_entry(self, incident_id: str) -> dict[str, Any]:
         """Pull most recent log entry from incident."""
-
-        params: dict[str, Any] = {
-            "time_zone": "UTC",
-            "offset": 0,
-            "limit": 1,
-        }
-
-        self.log.debug("List log entry: %s", params)
-        resp = self._http.get(
-            url=f"{self.base_url}/incidents/{incident_id}/log_entries",
-            params=params,
+        self._query.set_query_target(
+            route=f"/incidents/{incident_id}/log_entries",
+            object_name="log_entries",
         )
-
-        if not resp.is_success:
-            self.log.error("Unexpected error: %s", resp.text)
-            raise QueryError("Unexpected error")
-
-        return resp.json()["log_entries"][0]
+        self._query.set_query_params({"time_zone": "UTC"})
+        resp, _, _ = self._query.run(limit=1)
+        return resp[0]
 
     def _close_incidents(
         self,

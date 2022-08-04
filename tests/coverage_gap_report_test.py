@@ -9,7 +9,6 @@ from httpx import Response
 
 from pd_utils import coverage_gap_report
 from pd_utils.coverage_gap_report import CoverageGapReport
-from pd_utils.coverage_gap_report import QueryError
 from pd_utils.model import ScheduleCoverage
 from pd_utils.model.escalation_rule_coverage import EscalationRuleCoverage
 
@@ -117,46 +116,6 @@ def mapped_search(search: CoverageGapReport) -> CoverageGapReport:
     return search
 
 
-def test_get_all_schedule_ids(search: CoverageGapReport) -> None:
-    resp_jsons = json.loads(SCHEDULES_RESP)
-    resps = [Response(200, content=json.dumps(resp)) for resp in resp_jsons]
-    with patch.object(search._http, "get", side_effect=resps):
-
-        results = search._get_all_schedule_ids()
-
-    assert not results - EXPECTED_IDS
-
-
-def test_get_all_escalations(search: CoverageGapReport) -> None:
-    resp_jsons = json.loads(EP_RESP)
-    resps = [Response(200, content=json.dumps(resp)) for resp in resp_jsons]
-    with patch.object(search._http, "get", side_effect=resps):
-
-        results = search._get_all_escalations()
-
-    assert len(results) == EP_EXPECTED_COUNT
-
-
-def test_get_all_schedules_error(search: CoverageGapReport) -> None:
-    resps = [Response(401, content="")]
-
-    with patch.object(search._http, "get", side_effect=resps):
-
-        with pytest.raises(QueryError):
-
-            search._get_all_schedule_ids()
-
-
-def test_get_all_escalations_error(search: CoverageGapReport) -> None:
-    resps = [Response(401, content="")]
-
-    with patch.object(search._http, "get", side_effect=resps):
-
-        with pytest.raises(QueryError):
-
-            search._get_all_escalations()
-
-
 def test_get_schedule_coverage(search: CoverageGapReport) -> None:
     resps = [Response(200, content=SCHEDULE_RESP)]
     with patch.object(search._http, "get", side_effect=resps):
@@ -241,5 +200,5 @@ def test_run(search: CoverageGapReport) -> None:
         Response(200, content='{"escalation_policies": [], "more": false}'),
     ]
 
-    with patch.object(search._http, "get", side_effect=resps):
+    with patch.object(search._query._http, "get", side_effect=resps):
         search.run_reports()
