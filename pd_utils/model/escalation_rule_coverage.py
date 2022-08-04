@@ -4,9 +4,11 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
+from pd_utils.model.base import Base
+
 
 @dataclasses.dataclass
-class EscalationRuleCoverage:
+class EscalationRuleCoverage(Base):
     policy_id: str
     policy_name: str
     policy_html_url: str
@@ -42,7 +44,3 @@ class EscalationRuleCoverage:
                 )
             )
         return rules
-
-    def as_dict(self) -> dict[str, Any]:
-        """Render object as dictionary."""
-        return dataclasses.asdict(self)
