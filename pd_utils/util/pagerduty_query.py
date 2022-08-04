@@ -16,13 +16,14 @@ class PagerDutyQuery:
     class QueryError(Exception):
         ...
 
-    def __init__(self, token: str, email: str) -> None:
+    def __init__(self, token: str, email: str | None = None) -> None:
         """Initilize httpx client for queries to list endpoints."""
         headers = {
             "Accept": "application/vnd.pagerduty+json;version=2",
             "Authorization": f"Token token={token}",
-            "From": email,
         }
+        headers.update({"From": email} if email else {})
+
         self._http = httpx.Client(headers=headers)
         self._params: dict[str, Any] = {}
         self._route: str | None = None

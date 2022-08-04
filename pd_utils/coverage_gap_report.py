@@ -12,15 +12,12 @@ import httpx
 from pd_utils.model import EscalationRuleCoverage as EscCoverage
 from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import DateTool
+from pd_utils.util import PagerDutyQuery
 from pd_utils.util import RuntimeInit
 
 runtime = RuntimeInit("coverage-gap-report")
 runtime.init_secrets()
 runtime.init_logging()
-
-
-class QueryError(Exception):
-    ...
 
 
 class CoverageGapReport:
@@ -55,6 +52,7 @@ class CoverageGapReport:
         }
 
         self._http = httpx.Client(headers=headers)
+        self._query = PagerDutyQuery(token)
 
     def run_reports(self) -> None:
         """
@@ -89,25 +87,13 @@ class CoverageGapReport:
 
     def _get_all_escalations(self) -> list[dict[str, Any]]:
         """Pull all escalation polcies from PagerDuty."""
-        more = True
-        params = {"offset": 0, "limit": self._max_query_limit}
+        self._query.set_query_target("/escalation_policies", "escalation_policies")
+        self._query.set_query_params({})
+
         eps: list[dict[str, Any]] = []
-
-        while more:
-            self.log.debug("List escalation policies: %s", params)
-            resp = self._http.get(f"{self.base_url}/escalation_policies", params=params)
-
-            if not resp.is_success:
-                self.log.error("Unexpected error: %s", resp.text)
-                raise QueryError("Unexpected error")
-
-            eps.extend(resp.json()["escalation_policies"])
-
-            params["offset"] += self._max_query_limit
-            more = resp.json()["more"]
-
+        for result in self._query.run_iter(self._max_query_limit):
+            eps.extend(result)
         self.log.info("Discovered %d escalation policies.", len(eps))
-
         return eps
 
     def _save_schedule_report(self, filename: str | None = None) -> None:
@@ -154,24 +140,14 @@ class CoverageGapReport:
 
     def _get_all_schedule_ids(self) -> set[str]:
         """Get all unique schedule IDs."""
-        more = True
-        params = {"offset": 0, "limit": self._max_query_limit}
+        self._query.set_query_target("/schedules", "schedules")
+        self._query.set_query_params({})
+
         sch_ids: list[str] = []
-        while more:
-            self.log.debug("List schedules: %s", params)
-            resp = self._http.get(f"{self.base_url}/schedules", params=params)
-
-            if not resp.is_success:
-                self.log.error("Unexpected error: %s", resp.text)
-                raise QueryError("Unexpected error")
-
-            sch_ids.extend([schedule["id"] for schedule in resp.json()["schedules"]])
-
-            params["offset"] += self._max_query_limit
-            more = resp.json()["more"]
+        for schedules in self._query.run_iter(self._max_query_limit):
+            sch_ids.extend([sch["id"] for sch in schedules])
 
         self.log.info("Discovered %d schedules.", len(sch_ids))
-
         return set(sch_ids)
 
     def _map_schedule_coverages(self, schedule_ids: set[str]) -> None:
