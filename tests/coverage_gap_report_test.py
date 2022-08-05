@@ -194,11 +194,8 @@ def test_main():
         mocked.assert_called_once()
 
 
-def test_run(search: CoverageGapReport) -> None:
-    resps = [
-        Response(200, content='{"schedules": [], "more": false}'),
-        Response(200, content='{"escalation_policies": [], "more": false}'),
-    ]
+def test_run_clean_exits_no_work(search: CoverageGapReport) -> None:
+    resp_gen = [[]]  # type: ignore
 
-    with patch.object(search._query._http, "get", side_effect=resps):
+    with patch.object(search._query, "run_iter", return_value=resp_gen):
         search.run_reports()

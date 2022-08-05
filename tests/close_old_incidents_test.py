@@ -245,7 +245,7 @@ def test_close_incidents(
 
 
 def test_run_empty_results(closer: CloseOldIncidents) -> None:
-    resp_gen = (r for r in [])  # type: ignore
+    resp_gen = [[]]  # type: ignore
     with patch.object(closer._query, "run_iter", return_value=resp_gen) as http:
         closer.run()
 
@@ -253,7 +253,7 @@ def test_run_empty_results(closer: CloseOldIncidents) -> None:
 
 
 def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
-    resp_gen = (r for r in [])  # type: ignore
+    resp_gen = [[]]  # type: ignore
     closer._close_active = True
     with patch.object(closer._query, "run_iter", return_value=resp_gen):
         with patch.object(closer, "_isolate_inactive_incidents") as avoid:
