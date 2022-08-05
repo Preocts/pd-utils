@@ -69,13 +69,12 @@ def test_get_newest_log_entry(closer: CloseOldIncidents) -> None:
 
 def test_get_all_incidents(closer: CloseOldIncidents) -> None:
     resps = json.loads(INCIDENTS_RESP)
-    resp = [Response(200, content=json.dumps(r)) for r in resps]
+    resp_gen = (r["incidents"] for r in resps)
 
-    with patch.object(closer._query._http, "get", side_effect=resp) as mockhttp:
+    with patch.object(closer._query, "run_iter", return_value=resp_gen):
 
         results = closer._get_all_incidents()
 
-    assert mockhttp.call_count == 2
     assert not {i.incident_id for i in results} - EXPECTED_IDS
 
 
@@ -246,19 +245,17 @@ def test_close_incidents(
 
 
 def test_run_empty_results(closer: CloseOldIncidents) -> None:
-    resp = Response(200, content='{"incidents": [], "more": false}')
-    # with patch.object(closer._http, "get", return_value=resp) as http:
-    with patch.object(closer._query._http, "get", return_value=resp) as http:
+    resp_gen = (r for r in [])  # type: ignore
+    with patch.object(closer._query, "run_iter", return_value=resp_gen) as http:
         closer.run()
 
         assert http.call_count == 1
 
 
 def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
+    resp_gen = (r for r in [])  # type: ignore
     closer._close_active = True
-    resp = Response(200, content='{"incidents": [], "more": false}')
-    with patch.object(closer._query._http, "get", return_value=resp):
-        # with patch.object(closer._http, "get", return_value=resp):
+    with patch.object(closer._query, "run_iter", return_value=resp_gen):
         with patch.object(closer, "_isolate_inactive_incidents") as avoid:
             closer.run()
 
