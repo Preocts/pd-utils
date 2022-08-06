@@ -40,6 +40,12 @@ def test_to_csv_string(mockmodel: tuple[list[MockModel], str]) -> None:
     assert result == expected
 
 
+def test_to_csv_string_empty() -> None:
+    result = IOUtil.to_csv_string([])
+
+    assert result == ""
+
+
 def test_to_csv_string_cstm_fieldnames(mockmodel: tuple[list[MockModel], str]) -> None:
     sample, expected = mockmodel
     expected = (

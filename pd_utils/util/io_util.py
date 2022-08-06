@@ -18,6 +18,9 @@ class IOUtil:
             objs: Sequence of Base objects to convert
             fieldsnames: Optionally define which keys are used, extra will be ignored
         """
+        if not objs:
+            return ""
+
         csv_file = StringIO()
         if not fieldnames:
             fieldnames = list(objs[0].as_dict().keys())
