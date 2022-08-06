@@ -123,6 +123,8 @@ optional arguments:
 See: https://github.com/Preocts/pagerduty-utils
 ```
 
+---
+
 ## Coverage Gap Report
 
 Find gaps in on-call scheduling that could lead to missed alerts.  This report
