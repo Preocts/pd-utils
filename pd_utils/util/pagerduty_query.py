@@ -45,7 +45,7 @@ class PagerDutyQuery:
 
     def set_query_params(self, params: dict[str, Any]) -> None:
         """Set url fields for query."""
-        self._params = params
+        self._params = {k: v for k, v in params.items() if v is not None}
 
     def set_query_target(self, route: str, object_name: str) -> None:
         """
