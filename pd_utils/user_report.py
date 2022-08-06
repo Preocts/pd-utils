@@ -4,6 +4,7 @@ Pull a user report including general information on user accounts.
 from __future__ import annotations
 
 import logging
+from typing import Literal
 
 from pd_utils.model import User
 from pd_utils.util import DateTool
@@ -27,11 +28,43 @@ class UserReport:
         self._query = PagerDutyQuery(token)
         self._max_query_limit = max_query_limit
 
-    def run_report(self) -> str:
-        """Run report. Returns csv string."""
+    def run_report(
+        self,
+        team_ids: list[str] | None = None,
+        base_roles: list[
+            Literal[
+                "admin",
+                "limited_user",
+                "observer",
+                "owner",
+                "read_only_user",
+                "restricted_access",
+                "read_only_limited_user",
+                "user",
+            ]
+        ]
+        | None = None,
+        team_roles: list[Literal["observer", "responder", "manager"]] | None = None,
+    ) -> str:
+        """
+        Run report. Returns csv string.
+
+        Valid base roles include `admin`, `limited_user`, `observer`, `owner`,
+        `read_only_user`, `restricted_access`, `read_only_limited_user`, or `user`
+
+        Valid team roles include `observer`, `responder`, `manager`
+
+        Args:
+            team_ids: List of team ids to isolate in report
+            base_roles: List of base roles to isolate in report
+            team_roles: List of team roles to isolate in report
+        """
         self._query.set_query_target("/users", "users")
         self._query.set_query_params(
-            {"include[]": ["notification_rules", "teams", "contact_methods"]}
+            {
+                "include[]": ["notification_rules", "teams", "contact_methods"],
+                "team_ids[]": team_ids,
+            }
         )
         users: list[User] = []
         for resps in self._query.run_iter(limit=self._max_query_limit):
