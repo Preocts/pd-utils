@@ -51,3 +51,41 @@ def test_to_csv_string_cstm_fieldnames(mockmodel: tuple[list[MockModel], str]) -
     )
     result = IOUtil.to_csv_string(sample, ["flag", "name"])
     assert result == expected
+
+
+def test_write_to_file_empty_file_does_nothing() -> None:
+    # This will fail if an emtpy string is not early exited
+    IOUtil.write_to_file("", "")
+
+
+def test_write_to_file(mock_filename: str) -> None:
+    content = "This is a test."
+
+    IOUtil.write_to_file(mock_filename, content)
+
+    with open(mock_filename) as infile:
+        verify = infile.read()
+
+    assert verify == content
+
+
+def test_read_from_file(mock_filename: str) -> None:
+    content = "This is a test."
+    with open(mock_filename, "w") as outfile:
+        outfile.write(content)
+
+    verify = IOUtil.read_from_file(mock_filename)
+
+    assert verify == content
+
+
+def test_csv_to_dict() -> None:
+    content = "name,value\r\ntest1,1\r\ntest2,2\r\n"
+    expected = [
+        {"name": "test1", "value": "1"},
+        {"name": "test2", "value": "2"},
+    ]
+
+    result = IOUtil.csv_to_dict(content)
+
+    assert result == expected
