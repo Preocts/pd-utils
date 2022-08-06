@@ -37,8 +37,10 @@ class User(Base):
     def build_from(cls, resp: dict[str, Any]) -> User:
         """Build a User object from PagerDuty API response."""
         cmethods = [cm["type"] for cm in resp["contact_methods"] or []]
-        blocked = any([cm.get("blacklisted", False) for cm in resp["contact_methods"]])
-        nr = "notification_rules"
+        blocked = any(
+            [cm.get("blacklisted", False) for cm in resp["contact_methods"] or []]
+        )
+        nrules = resp["notification_rules"] or []
         return cls(
             name=resp["name"],
             html_url=resp["html_url"],
@@ -46,22 +48,22 @@ class User(Base):
             title=resp["job_title"],
             base_role=resp["role"],
             timezone=resp["time_zone"],
-            observer_in=User._get_teams(resp["teams"], "observer"),
-            responder_in=User._get_teams(resp["teams"], "responder"),
-            manager_in=User._get_teams(resp["teams"], "manager"),
+            observer_in=User._get_teams(resp["teams"] or [], "observer"),
+            responder_in=User._get_teams(resp["teams"] or [], "responder"),
+            manager_in=User._get_teams(resp["teams"] or [], "manager"),
             has_email="email_contact_method" in cmethods,
             has_push="push_notification_contact_method" in cmethods,
             has_sms="sms_contact_method" in cmethods,
             has_phone="phone_contact_method" in cmethods,
             has_blocked=blocked,
-            high_urgency_email_delay=User._get_delay(resp[nr], "email", "high"),
-            high_urgency_push_delay=User._get_delay(resp[nr], "push", "high"),
-            high_urgency_sms_delay=User._get_delay(resp[nr], "sms", "high"),
-            high_urgency_phone_delay=User._get_delay(resp[nr], "phone", "high"),
-            low_urgency_email_delay=User._get_delay(resp[nr], "email", "low"),
-            low_urgency_push_delay=User._get_delay(resp[nr], "push", "low"),
-            low_urgency_sms_delay=User._get_delay(resp[nr], "sms", "low"),
-            low_urgency_phone_delay=User._get_delay(resp[nr], "phone", "low"),
+            high_urgency_email_delay=User._get_delay(nrules, "email", "high"),
+            high_urgency_push_delay=User._get_delay(nrules, "push", "high"),
+            high_urgency_sms_delay=User._get_delay(nrules, "sms", "high"),
+            high_urgency_phone_delay=User._get_delay(nrules, "phone", "high"),
+            low_urgency_email_delay=User._get_delay(nrules, "email", "low"),
+            low_urgency_push_delay=User._get_delay(nrules, "push", "low"),
+            low_urgency_sms_delay=User._get_delay(nrules, "sms", "low"),
+            low_urgency_phone_delay=User._get_delay(nrules, "phone", "low"),
         )
 
     @staticmethod

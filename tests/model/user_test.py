@@ -35,3 +35,30 @@ def test_model() -> None:
     assert model.low_urgency_push_delay is None
     assert model.low_urgency_phone_delay is None
     assert model.low_urgency_sms_delay == ["5"]
+
+
+def test_model_no_teams() -> None:
+    resp = json.loads(USER)
+    resp["teams"] = None
+
+    model = User.build_from(resp)
+
+    assert model.manager_in is None
+
+
+def test_model_no_contact_methods() -> None:
+    resp = json.loads(USER)
+    resp["contact_methods"] = None
+
+    model = User.build_from(resp)
+
+    assert model.has_email is False
+
+
+def test_model_no_notificatoin_rules() -> None:
+    resp = json.loads(USER)
+    resp["notification_rules"] = None
+
+    model = User.build_from(resp)
+
+    assert model.high_urgency_email_delay is None
