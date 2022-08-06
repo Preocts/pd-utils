@@ -43,7 +43,7 @@ class RuntimeInit:
         default: str,
         help_: str = "",
         choices: Sequence[str] | None = None,
-        nargs: str | int = 1,
+        nargs: str | int | None = None,
     ) -> None:
         """
         Add a command line argument to the parser.
@@ -60,7 +60,7 @@ class RuntimeInit:
             default=default,
             help=help_,
             choices=choices,
-            nargs=nargs,
+            nargs=nargs,  # type: ignore # (preocts) None is valid here
         )
 
     def add_standard_arguments(
