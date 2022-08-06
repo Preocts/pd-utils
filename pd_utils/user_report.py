@@ -75,6 +75,24 @@ class UserReport:
 
         return IOUtil.to_csv_string(users)
 
+    @staticmethod
+    def _isolate_by_base_role(users: list[User], roles: list[str]) -> list[User]:
+        """Return User objects that have given base roles or all if roles is empty."""
+        if not roles:
+            return users
+        return [user for user in users if user.base_role in roles]
+
+    @staticmethod
+    def _isolate_by_team_role(users: list[User], roles: list[str]) -> list[User]:
+        """Return User objects that have given team role or all if roles is empty."""
+        if not roles:
+            return users
+        iso: list[User] = []
+        for user in users:
+            if any([getattr(user, f"{role}_in") for role in roles]):
+                iso.append(user)
+        return iso
+
 
 def main(_args: list[str] | None = None) -> int:
     """Main point of entry for CLI."""
