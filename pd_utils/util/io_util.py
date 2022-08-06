@@ -36,7 +36,7 @@ class IOUtil:
         """Convert a csv string to a list of dictionaries."""
         csv_io = StringIO(csv_string)
         dict_reader = csv.DictReader(csv_io)
-        return [row for row in dict_reader]
+        return [*dict_reader]
 
     @staticmethod
     def write_to_file(filepath: str, content: str) -> None:
