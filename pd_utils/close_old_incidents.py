@@ -1,7 +1,6 @@
 """Clean up stale or ignored incidents in PagerDuty."""
 from __future__ import annotations
 
-import csv
 import datetime
 import logging
 from typing import Any
@@ -11,6 +10,7 @@ import httpx
 
 from pd_utils.model import Incident
 from pd_utils.util import DateTool
+from pd_utils.util import IOUtil
 from pd_utils.util import PagerDutyQuery
 from pd_utils.util import RuntimeInit
 
@@ -70,15 +70,25 @@ class CloseOldIncidents:
 
     def run(self, inputfile: str | None = None) -> None:
         """Run the script."""
+        filedate = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+
         if inputfile:
             self.log.info("Reading input file: %s", inputfile)
-            to_close = self._load_input_file(inputfile)
+
+            to_close_dict = IOUtil.csv_to_dict(IOUtil.read_from_file(inputfile))
+            to_close = [Incident(**row) for row in to_close_dict]
             self.log.info("Read %s inactives, starting actions", len(to_close))
 
             successes, errors = self._close_incidents(to_close)
 
-            self._write_file(successes, "close-old-incidents")
-            self._write_file(errors, "close-old-incidents-errors")
+            IOUtil.write_to_file(
+                filepath=f"close-old-incidents-{filedate}.csv",
+                content=IOUtil.to_csv_string(successes),
+            )
+            IOUtil.write_to_file(
+                filepath=f"close-old-incidents-errors-{filedate}.csv",
+                content=IOUtil.to_csv_string(errors),
+            )
 
         else:
             self.log.info("Pulling incidents from PagerDuty, this can take a while")
@@ -92,29 +102,10 @@ class CloseOldIncidents:
             if not self._close_active:
                 isolated = self._isolate_inactive_incidents(isolated)
 
-            self._write_file(isolated, "close-old-incidents-preview")
-
-    def _load_input_file(self, inputfile: str) -> list[Incident]:
-        """Load input file."""
-        with open(inputfile) as f:
-            reader = csv.DictReader(f)
-            return [Incident(**row) for row in reader]  # type: ignore
-
-    def _write_file(self, rows: list[Incident], filename: str) -> None:
-        """Write rows to file, date and `.csv` appended to filename."""
-        if not rows:
-            return None
-
-        filedate = datetime.datetime.now().strftime("%Y%m%d-%H%M")
-        filename = f"{filename}-{filedate}.csv"
-        headers = list(rows[0].as_dict().keys())
-
-        with open(filename, "w") as outfile:
-            writer = csv.DictWriter(outfile, fieldnames=headers)
-            writer.writeheader()
-            writer.writerows(row.as_dict() for row in rows)
-
-        self.log.info("Wrote %s rows to %s", len(rows), filename)
+            IOUtil.write_to_file(
+                filepath=f"close-old-incidents-preview-{filedate}.csv",
+                content=IOUtil.to_csv_string(isolated),
+            )
 
     def _isolate_old_incidents(self, incidents: list[Incident]) -> list[Incident]:
         """Isolate old incidents from list of incidents."""
