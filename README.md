@@ -65,8 +65,14 @@ with `python -m pd_utils.script_name`
 
 ## User Report
 
-Pull detailed information about all user accounts or filter by `team_ids`, user
-base role, or team level roles.
+Pull detailed information about all user accounts or filter by one or more
+`--team_ids`, `--base_roles`, and/or `--team_roles`.  Filters are cumlative.
+
+**Outputs:**
+
+| filename                  | contents    |
+| ------------------------- | ----------- |
+| user_reportYYYY-MM-DD.csv | User report |
 
 **Report Columns**
 
@@ -108,20 +114,14 @@ optional arguments:
   --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         Logging level (default: $LOGGING_LEVEL | INFO)
   --team_ids [TEAM_IDS [TEAM_IDS ...]]
-                        Comma separated list of team ids to include in report.
+                        List of team ids to include in report.
   --base_roles [{admin,limited_user,observer,owner,read_only_user,restricted_access,read_only_limited_user,user} [{admin,limited_user,observer,owner,read_only_user,restricted_access,read_only_limited_user,user} ...]]
-                        Comma separated list of base roles applied as a filter to report.
+                        List of base roles applied as a filter to report.
   --team_roles [{manager,observer,responder} [{manager,observer,responder} ...]]
-                        Comma separated list of team roles applied as a filter to report.
+                        List of team roles applied as a filter to report.
 
 See: https://github.com/Preocts/pagerduty-utils
 ```
-
-**Outputs:**
-
-| filename                  | contents    |
-| ------------------------- | ----------- |
-| user_reportYYYY-MM-DD.csv | User report |
 
 ## Coverage Gap Report
 

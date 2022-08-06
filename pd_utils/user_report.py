@@ -94,13 +94,13 @@ def main(_args: list[str] | None = None) -> int:
     runtime.add_argument(
         flag="--team_ids",
         default="",
-        help_="Comma separated list of team ids to include in report.",
+        help_="List of team ids to include in report.",
         nargs="*",
     )
     runtime.add_argument(
         flag="--base_roles",
         default="",
-        help_="Comma separated list of base roles applied as a filter to report. ",
+        help_="List of base roles applied as a filter to report. ",
         choices=[
             "admin",
             "limited_user",
@@ -116,7 +116,7 @@ def main(_args: list[str] | None = None) -> int:
     runtime.add_argument(
         flag="--team_roles",
         default="",
-        help_="Comma separated list of team roles applied as a filter to report.",
+        help_="List of team roles applied as a filter to report.",
         choices=["manager", "observer", "responder"],
         nargs="*",
     )
