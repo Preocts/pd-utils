@@ -1,0 +1,202 @@
+{
+    "name": "Preocts",
+    "email": "preocts@preocts.com",
+    "time_zone": "America/New_York",
+    "color": "deep-pink",
+    "avatar_url": "https://secure.gravatar.com/avatar/e523f2c5ead7f58a8f7890d9a61516ea.png?d=mm&r=PG",
+    "billed": true,
+    "role": "user",
+    "description": null,
+    "invitation_sent": false,
+    "job_title": "Software Engineer",
+    "teams": [
+        {
+            "id": "PLNRGGS",
+            "name": "Egg Carton",
+            "description": null,
+            "type": "team",
+            "summary": "Egg Carton",
+            "self": "https://api.pagerduty.com/teams/PLNRGGS",
+            "html_url": "https://preocts.pagerduty.com/teams/PLNRGGS",
+            "default_role": "responder",
+            "parent": null
+        },
+        {
+            "id": "PHB3G42",
+            "name": "Eggmins",
+            "description": null,
+            "type": "team",
+            "summary": "Eggmins",
+            "self": "https://api.pagerduty.com/teams/PHB3G42",
+            "html_url": "https://preocts.pagerduty.com/teams/PHB3G42",
+            "default_role": "manager",
+            "parent": null
+        }
+    ],
+    "contact_methods": [
+        {
+            "id": "P2IE5PD",
+            "type": "email_contact_method",
+            "summary": "Default",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P2IE5PD",
+            "html_url": null,
+            "label": "Default",
+            "address": "preocts@preocts.com",
+            "send_short_email": false,
+            "send_html_email": true
+        },
+        {
+            "id": "P4IMSAI",
+            "type": "phone_contact_method",
+            "summary": "Work",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P4IMSAI",
+            "html_url": null,
+            "label": "Work",
+            "address": "5558675309",
+            "blacklisted": true,
+            "country_code": 1
+        },
+        {
+            "id": "P19BRLV",
+            "type": "sms_contact_method",
+            "summary": "Mobile",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P19BRLV",
+            "html_url": null,
+            "label": "Mobile",
+            "address": "5558675309",
+            "blacklisted": false,
+            "country_code": 1,
+            "enabled": true
+        }
+    ],
+    "notification_rules": [
+        {
+            "id": "PPKK9PN",
+            "type": "assignment_notification_rule",
+            "summary": "0 minutes: channel P2IE5PD",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/notification_rules/PPKK9PN",
+            "html_url": null,
+            "start_delay_in_minutes": 0,
+            "contact_method": {
+                "id": "P2IE5PD",
+                "type": "email_contact_method",
+                "summary": "Default",
+                "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P2IE5PD",
+                "html_url": null,
+                "label": "Default",
+                "address": "preocts@preocts.com",
+                "send_short_email": false,
+                "send_html_email": true
+            },
+            "urgency": "high"
+        },
+        {
+            "id": "P7KZ1K1",
+            "type": "assignment_notification_rule",
+            "summary": "0 minutes: channel P2IE5PD",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/notification_rules/P7KZ1K1",
+            "html_url": null,
+            "start_delay_in_minutes": 0,
+            "contact_method": {
+                "id": "P2IE5PD",
+                "type": "email_contact_method",
+                "summary": "Default",
+                "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P2IE5PD",
+                "html_url": null,
+                "label": "Default",
+                "address": "preocts@preocts.com",
+                "send_short_email": false,
+                "send_html_email": true
+            },
+            "urgency": "low"
+        },
+        {
+            "id": "PX6WNE0",
+            "type": "assignment_notification_rule",
+            "summary": "2 minutes: channel P4IMSAI",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/notification_rules/PX6WNE0",
+            "html_url": null,
+            "start_delay_in_minutes": 2,
+            "contact_method": {
+                "id": "P4IMSAI",
+                "type": "phone_contact_method",
+                "summary": "Work",
+                "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P4IMSAI",
+                "html_url": null,
+                "label": "Work",
+                "address": "5558675309",
+                "blacklisted": false,
+                "country_code": 1
+            },
+            "urgency": "high"
+        },
+        {
+            "id": "PTX8N1A",
+            "type": "assignment_notification_rule",
+            "summary": "4 minutes: channel P4IMSAI",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/notification_rules/PTX8N1A",
+            "html_url": null,
+            "start_delay_in_minutes": 4,
+            "contact_method": {
+                "id": "P4IMSAI",
+                "type": "phone_contact_method",
+                "summary": "Work",
+                "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P4IMSAI",
+                "html_url": null,
+                "label": "Work",
+                "address": "5558675309",
+                "blacklisted": false,
+                "country_code": 1
+            },
+            "urgency": "high"
+        },
+        {
+            "id": "PLAEQXT",
+            "type": "assignment_notification_rule",
+            "summary": "0 minutes: channel P19BRLV",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/notification_rules/PLAEQXT",
+            "html_url": null,
+            "start_delay_in_minutes": 0,
+            "contact_method": {
+                "id": "P19BRLV",
+                "type": "sms_contact_method",
+                "summary": "Mobile",
+                "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P19BRLV",
+                "html_url": null,
+                "label": "Mobile",
+                "address": "5558675309",
+                "blacklisted": false,
+                "country_code": 1,
+                "enabled": true
+            },
+            "urgency": "high"
+        },
+        {
+            "id": "PAFHOTQ",
+            "type": "assignment_notification_rule",
+            "summary": "5 minutes: channel P19BRLV",
+            "self": "https://api.pagerduty.com/users/PSIUGWW/notification_rules/PAFHOTQ",
+            "html_url": null,
+            "start_delay_in_minutes": 5,
+            "contact_method": {
+                "id": "P19BRLV",
+                "type": "sms_contact_method",
+                "summary": "Mobile",
+                "self": "https://api.pagerduty.com/users/PSIUGWW/contact_methods/P19BRLV",
+                "html_url": null,
+                "label": "Mobile",
+                "address": "5558675309",
+                "blacklisted": false,
+                "country_code": 1,
+                "enabled": true
+            },
+            "urgency": "low"
+        }
+    ],
+    "coordinated_incidents": [],
+    "id": "PSIUGWW",
+    "type": "user",
+    "summary": "Preocts",
+    "self": "https://api.pagerduty.com/users/PSIUGWW",
+    "html_url": "https://preocts.pagerduty.com/users/PSIUGWW"
+}
