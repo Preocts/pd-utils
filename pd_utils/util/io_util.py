@@ -7,7 +7,7 @@ from typing import Sequence
 from pd_utils.model.base import Base
 
 
-class OutputUtil:
+class IOUtil:
     @staticmethod
     def to_csv_string(objs: Sequence[Base], fieldnames: list[str] | None = None) -> str:
         """

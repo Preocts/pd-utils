@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import pytest
 
 from pd_utils.model.base import Base
-from pd_utils.util import OutputUtil
+from pd_utils.util import IOUtil
 
 
 @dataclass
@@ -36,7 +36,7 @@ def mockmodel() -> tuple[list[MockModel], str]:
 
 def test_to_csv_string(mockmodel: tuple[list[MockModel], str]) -> None:
     sample, expected = mockmodel
-    result = OutputUtil.to_csv_string(sample)
+    result = IOUtil.to_csv_string(sample)
     assert result == expected
 
 
@@ -49,5 +49,5 @@ def test_to_csv_string_cstm_fieldnames(mockmodel: tuple[list[MockModel], str]) -
         "True,Test3\r\n"
         "False,Test4\r\n"
     )
-    result = OutputUtil.to_csv_string(sample, ["flag", "name"])
+    result = IOUtil.to_csv_string(sample, ["flag", "name"])
     assert result == expected
