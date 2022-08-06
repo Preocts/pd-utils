@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import datetime
 import json
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
-from _pytest.monkeypatch import MonkeyPatch
 from httpx import Response
 
 from pd_utils import close_old_incidents
@@ -157,57 +154,6 @@ def test_main_optional_args() -> None:
     }
 
 
-def test_save_file(
-    mock_incidents: list[Incident],
-    monkeypatch: MonkeyPatch,
-) -> None:
-    now = datetime.datetime(1999, 12, 25, 13, 50, 30, 0)
-    mock_dt = MagicMock(now=MagicMock(return_value=now))
-    monkeypatch.setattr(close_old_incidents.datetime, "datetime", mock_dt)
-    mock_filename = "temp_save_test"
-    filecheck = Path(f"{mock_filename}-{now.strftime('%Y%m%d-%H%M')}.csv")
-    client = close_old_incidents.CloseOldIncidents("mock", "mock")
-
-    try:
-        client._write_file(mock_incidents, mock_filename)
-
-        assert filecheck.exists()
-
-    finally:
-        filecheck.unlink(True)
-
-
-def test_empty_save(monkeypatch: MonkeyPatch) -> None:
-    now = datetime.datetime(1999, 12, 25, 13, 50, 30, 0)
-    mock_dt = MagicMock(now=MagicMock(return_value=now))
-    monkeypatch.setattr(close_old_incidents.datetime, "datetime", mock_dt)
-    mock_filename = "temp_save_test"
-    filecheck = Path(f"{mock_filename}-{now.strftime('%Y%m%d-%H%M')}.csv")
-    client = close_old_incidents.CloseOldIncidents("mock", "mock")
-
-    try:
-        client._write_file([], mock_filename)
-
-        assert not filecheck.exists()
-
-    finally:
-        filecheck.unlink(True)
-
-
-def test_load_file(closer: CloseOldIncidents) -> None:
-    writefile = Path("temp_load_test.csv")
-    with writefile.open("w") as outfile:
-        outfile.write(MOCK_REPORT)
-
-    try:
-        result = closer._load_input_file(str(writefile))
-
-        assert len(result) == 4
-
-    finally:
-        writefile.unlink(True)
-
-
 @pytest.mark.parametrize(("status", "expect"), ((200, True), (400, False)))
 def test_resolve_incident(status: int, expect: bool, closer: CloseOldIncidents) -> None:
     resps = [Response(status)]
@@ -262,9 +208,5 @@ def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
             avoid.assert_not_called()
 
 
-def test_run_empty_file(closer: CloseOldIncidents) -> None:
-    with patch.object(closer, "_load_input_file", return_value=[]) as mocked:
-        closer.run("mock_file")
-
-        assert mocked.call_count == 1
-        mocked.assert_called_with("mock_file")
+def test_run_empty_file(mock_filename: str, closer: CloseOldIncidents) -> None:
+    closer.run(mock_filename)

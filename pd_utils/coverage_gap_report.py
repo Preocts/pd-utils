@@ -3,7 +3,6 @@ Poll PagerDuty and identify on-call coverage gaps.
 """
 from __future__ import annotations
 
-import csv
 import logging
 from typing import Any
 
@@ -12,6 +11,7 @@ import httpx
 from pd_utils.model import EscalationRuleCoverage as EscCoverage
 from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import DateTool
+from pd_utils.util import IOUtil
 from pd_utils.util import PagerDutyQuery
 from pd_utils.util import RuntimeInit
 
@@ -54,9 +54,9 @@ class CoverageGapReport:
         self._http = httpx.Client(headers=headers)
         self._query = PagerDutyQuery(token)
 
-    def run_reports(self) -> None:
+    def run_reports(self) -> tuple[str, str]:
         """
-        Runs coverage gap reports.
+        Runs reports. Returns csv strings of Schedule and Escalation reports.
 
         Raises:
             QueryError
@@ -65,8 +65,9 @@ class CoverageGapReport:
         self._map_escalation_coverages(self._get_all_escalations())
         self._hydrate_escalation_coverage_flags()
 
-        self._save_schedule_report()
-        self._save_escalation_report()
+        schedule = IOUtil.to_csv_string(list(self._schedule_map.values()))
+        escalation = IOUtil.to_csv_string(list(self._escalation_map.values()))
+        return schedule, escalation
 
     def get_schedule_coverage(self, schedule_id: str) -> SchCoverage | None:
         """Get ScheduleCoverage from PagerDuty with specific schedule id."""
@@ -95,48 +96,6 @@ class CoverageGapReport:
             eps.extend(result)
         self.log.info("Discovered %d escalation policies.", len(eps))
         return eps
-
-    def _save_schedule_report(self, filename: str | None = None) -> None:
-        """Save report to file."""
-        now = DateTool.utcnow_isotime().split("T")[0]
-        filename = filename or f"schedule_gap_report{now}.csv"
-
-        coverages = list(self._schedule_map.values())
-
-        if not coverages:
-            self.log.info("Nothing to save for schedules.")
-            return
-
-        self.log.info("Saving %d lines to %s", len(coverages), filename)
-
-        cov_dcts = [cov.as_dict() for cov in coverages]
-        fields = list(cov_dcts[0].keys())
-
-        with open(filename, "w") as outfile:
-            dct_writer = csv.DictWriter(outfile, fieldnames=fields)
-            dct_writer.writeheader()
-            dct_writer.writerows(cov_dcts)
-
-    def _save_escalation_report(self, filename: str | None = None) -> None:
-        """Save report to file."""
-        now = DateTool.utcnow_isotime().split("T")[0]
-        filename = filename or f"escalation_rule_gap_report{now}.csv"
-
-        ep_rules = list(self._escalation_map.values())
-
-        if not ep_rules:
-            self.log.info("Nothing to save for escalation policies.")
-            return
-
-        self.log.info("Saving %d lines to %s", len(ep_rules), filename)
-
-        esc_dcts = [esc.as_dict() for esc in ep_rules]
-        fields = list(esc_dcts[0].keys())
-
-        with open(filename, "w") as outfile:
-            dict_writer = csv.DictWriter(outfile, fieldnames=fields)
-            dict_writer.writeheader()
-            dict_writer.writerows(esc_dcts)
 
     def _get_all_schedule_ids(self) -> set[str]:
         """Get all unique schedule IDs."""
@@ -202,7 +161,11 @@ def main(*, _args: list[str] | None = None) -> int:
     )
     args = runtime.parse_args(_args)
     client = CoverageGapReport(token=args.token, look_ahead_days=int(args.look_ahead))
-    client.run_reports()
+    schedule_report, escalation_report = client.run_reports()
+
+    now = DateTool.utcnow_isotime().split("T")[0]
+    IOUtil.write_to_file(f"schedule_gap_report{now}.csv", schedule_report)
+    IOUtil.write_to_file(f"escalation_rule_gap_report{now}.csv", escalation_report)
 
     return 0
 
