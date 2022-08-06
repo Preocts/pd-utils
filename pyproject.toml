@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pd-utils"
-version = "1.2.1"
+version = "1.2.3"
 requires-python = ">=3.8"
 description = "Utility scripts for PagerDuty instance administration and reporting."
 readme = "README.md"
@@ -56,6 +56,7 @@ coverage-gap-report = "pd_utils.coverage_gap_report:main"
 safelist-gatherer = "pd_utils.safelist_gatherer:console_output"
 simple-alert = "pd_utils.simple_alert:console_handler"
 close-old-incidents = "pd_utils.close_old_incidents:main"
+user-report = "pd_utils.user_report:main"
 
 # [tool.setuptools.packages.find]
 # where = ["src"]  # ["."] by default
