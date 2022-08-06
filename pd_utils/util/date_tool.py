@@ -21,8 +21,7 @@ class DateTool:
         """Find the number of seconds between two PD formated iso times."""
         start_ = DateTool.to_datetime(start)
         end_ = DateTool.to_datetime(end)
-        delta = end_ - start_
-        return delta.days * 86_400 + delta.seconds
+        return int((end_ - start_).total_seconds())
 
     @staticmethod
     def add_offset(
