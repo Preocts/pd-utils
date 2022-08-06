@@ -10,18 +10,20 @@ from pd_utils.model.base import Base
 class User(Base):
     """Empty User object for User Report."""
 
-    name: str
-    html_url: str
-    email: str
-    title: str
-    base_role: str
-    timezone: str
-    teams_and_role: list[str]
-    has_email: bool
-    has_push: bool
-    has_sms: bool
-    has_phone: bool
-    has_blocked: bool
+    name: str = ""
+    html_url: str = ""
+    email: str = ""
+    title: str = ""
+    base_role: str = ""
+    timezone: str = ""
+    observer_in: list[str] | None = None
+    responder_in: list[str] | None = None
+    manager_in: list[str] | None = None
+    has_email: bool = False
+    has_push: bool = False
+    has_sms: bool = False
+    has_phone: bool = False
+    has_blocked: bool = False
     high_urgency_email_delay: list[str] | None = None
     high_urgency_push_delay: list[str] | None = None
     high_urgency_sms_delay: list[str] | None = None
@@ -34,7 +36,6 @@ class User(Base):
     @classmethod
     def build_from(cls, resp: dict[str, Any]) -> User:
         """Build a User object from PagerDuty API response."""
-        teams = User._parse_teams(resp["teams"] or [])
         cmethods = [cm["type"] for cm in resp["contact_methods"] or []]
         blocked = any([cm.get("blacklisted", False) for cm in resp["contact_methods"]])
         nr = "notification_rules"
@@ -45,7 +46,9 @@ class User(Base):
             title=resp["job_title"],
             base_role=resp["role"],
             timezone=resp["time_zone"],
-            teams_and_role=teams,
+            observer_in=User._get_teams(resp["teams"], "observer"),
+            responder_in=User._get_teams(resp["teams"], "responder"),
+            manager_in=User._get_teams(resp["teams"], "manager"),
             has_email="email_contact_method" in cmethods,
             has_push="push_notification_contact_method" in cmethods,
             has_sms="sms_contact_method" in cmethods,
@@ -62,9 +65,9 @@ class User(Base):
         )
 
     @staticmethod
-    def _parse_teams(teams: list[dict[str, Any]]) -> list[str]:
-        """Format teams as TeamName (role)."""
-        return [f"{team['name']} ({team['default_role']})" for team in teams]
+    def _get_teams(teams: list[dict[str, Any]], role: str) -> list[str] | None:
+        """Return team names of teams with matching role."""
+        return [team["name"] for team in teams if team["default_role"] == role] or None
 
     @staticmethod
     def _get_delay(

@@ -19,7 +19,9 @@ def test_model() -> None:
     assert model.title == "Software Engineer"
     assert model.base_role == "user"
     assert model.timezone == "America/New_York"
-    assert model.teams_and_role == ["Egg Carton (responder)", "Eggmins (manager)"]
+    assert model.observer_in is None
+    assert model.responder_in == ["Egg Carton"]
+    assert model.manager_in == ["Eggmins"]
     assert model.has_email is True
     assert model.has_push is False
     assert model.has_sms is True
