@@ -4,7 +4,6 @@ Pull a user report including general information on user accounts.
 from __future__ import annotations
 
 import logging
-from typing import Literal
 
 from pd_utils.model import User
 from pd_utils.util import DateTool
@@ -31,20 +30,8 @@ class UserReport:
     def run_report(
         self,
         team_ids: list[str] | None = None,
-        base_roles: list[
-            Literal[
-                "admin",
-                "limited_user",
-                "observer",
-                "owner",
-                "read_only_user",
-                "restricted_access",
-                "read_only_limited_user",
-                "user",
-            ]
-        ]
-        | None = None,
-        team_roles: list[Literal["observer", "responder", "manager"]] | None = None,
+        base_roles: list[str] | None = None,
+        team_roles: list[str] | None = None,
     ) -> str:
         """
         Run report. Returns csv string.
@@ -72,6 +59,9 @@ class UserReport:
             users.extend([User.build_from(resp) for resp in resps])
 
         self.log.info("Discovered %d users in total.", len(users))
+
+        users = self._isolate_by_base_role(users, base_roles or [])
+        users = self._isolate_by_team_role(users, team_roles or [])
 
         return IOUtil.to_csv_string(users)
 
