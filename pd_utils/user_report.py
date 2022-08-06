@@ -50,18 +50,20 @@ class UserReport:
         self._query.set_query_params(
             {
                 "include[]": ["notification_rules", "teams", "contact_methods"],
-                "team_ids[]": team_ids,
+                "team_ids[]": team_ids or None,
             }
         )
         users: list[User] = []
         for resps in self._query.run_iter(limit=self._max_query_limit):
             self.log.debug("Pulling %d users...", self._max_query_limit)
             users.extend([User.build_from(resp) for resp in resps])
-
         self.log.info("Discovered %d users in total.", len(users))
 
         users = self._isolate_by_base_role(users, base_roles or [])
+        self.log.info("Isolated %d users by base role.", len(users))
+
         users = self._isolate_by_team_role(users, team_roles or [])
+        self.log.info("Isolated %d users by team role.", len(users))
 
         return IOUtil.to_csv_string(users)
 
@@ -89,12 +91,44 @@ def main(_args: list[str] | None = None) -> int:
     runtime = RuntimeInit("user-report")
     runtime.init_secrets()
     runtime.add_standard_arguments(email=False)
+    runtime.add_argument(
+        flag="--team_ids",
+        default="",
+        help_="Comma separated list of team ids to include in report.",
+        nargs="*",
+    )
+    runtime.add_argument(
+        flag="--base_roles",
+        default="",
+        help_="Comma separated list of base roles applied as a filter to report. ",
+        choices=[
+            "admin",
+            "limited_user",
+            "observer",
+            "owner",
+            "read_only_user",
+            "restricted_access",
+            "read_only_limited_user",
+            "user",
+        ],
+        nargs="*",
+    )
+    runtime.add_argument(
+        flag="--team_roles",
+        default="",
+        help_="Comma separated list of team roles applied as a filter to report.",
+        choices=["manager", "observer", "responder"],
+        nargs="*",
+    )
     args = runtime.parse_args(_args)
     runtime.init_logging()
 
-    # TODO: Define CLI here
     print("Starting User Report, this pull can take some time.")
-    report = UserReport(args.token).run_report()
+    report = UserReport(args.token).run_report(
+        team_ids=args.team_ids,
+        base_roles=args.base_roles,
+        team_roles=args.team_roles,
+    )
 
     now = DateTool.utcnow_isotime().split("T")[0]
     IOUtil.write_to_file(f"user_report{now}.csv", report)
