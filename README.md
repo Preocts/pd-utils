@@ -66,7 +66,7 @@ with `python -m pd_utils.script_name`
 ## User Report
 
 Pull detailed information about all user accounts or filter by one or more
-`--team_ids`, `--base_roles`, and/or `--team_roles`.  Filters are cumlative.
+`team_ids`.
 
 **Outputs:**
 
@@ -103,8 +103,6 @@ Pull detailed information about all user accounts or filter by one or more
 
 ```shell
 usage: user-report [-h] [--token TOKEN] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--team_ids [TEAM_IDS [TEAM_IDS ...]]]
-                   [--base_roles [{admin,limited_user,observer,owner,read_only_user,restricted_access,read_only_limited_user,user} [{admin,limited_user,observer,owner,read_only_user,restricted_access,read_only_limited_user,user} ...]]]
-                   [--team_roles [{manager,observer,responder} [{manager,observer,responder} ...]]]
 
 Pagerduty command line utilities.
 
@@ -115,10 +113,6 @@ optional arguments:
                         Logging level (default: $LOGGING_LEVEL | INFO)
   --team_ids [TEAM_IDS [TEAM_IDS ...]]
                         List of team ids to include in report.
-  --base_roles [{admin,limited_user,observer,owner,read_only_user,restricted_access,read_only_limited_user,user} [{admin,limited_user,observer,owner,read_only_user,restricted_access,read_only_limited_user,user} ...]]
-                        List of base roles applied as a filter to report.
-  --team_roles [{manager,observer,responder} [{manager,observer,responder} ...]]
-                        List of team roles applied as a filter to report.
 
 See: https://github.com/Preocts/pagerduty-utils
 ```

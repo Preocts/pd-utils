@@ -27,24 +27,12 @@ class UserReport:
         self._query = PagerDutyQuery(token)
         self._max_query_limit = max_query_limit
 
-    def run_report(
-        self,
-        team_ids: list[str] | None = None,
-        base_roles: list[str] | None = None,
-        team_roles: list[str] | None = None,
-    ) -> str:
+    def run_report(self, team_ids: list[str] | None = None) -> str:
         """
         Run report. Returns csv string.
 
-        Valid base roles include `admin`, `limited_user`, `observer`, `owner`,
-        `read_only_user`, `restricted_access`, `read_only_limited_user`, or `user`
-
-        Valid team roles include `observer`, `responder`, `manager`
-
         Args:
             team_ids: List of team ids to isolate in report
-            base_roles: List of base roles to isolate in report
-            team_roles: List of team roles to isolate in report
         """
         self._query.set_query_target("/users", "users")
         self._query.set_query_params(
@@ -59,31 +47,7 @@ class UserReport:
             users.extend([User.build_from(resp) for resp in resps])
         self.log.info("Discovered %d users in total.", len(users))
 
-        users = self._isolate_by_base_role(users, base_roles or [])
-        self.log.info("Isolated %d users by base role.", len(users))
-
-        users = self._isolate_by_team_role(users, team_roles or [])
-        self.log.info("Isolated %d users by team role.", len(users))
-
         return IOUtil.to_csv_string(users)
-
-    @staticmethod
-    def _isolate_by_base_role(users: list[User], roles: list[str]) -> list[User]:
-        """Return User objects that have given base roles or all if roles is empty."""
-        if not roles:
-            return users
-        return [user for user in users if user.base_role in roles]
-
-    @staticmethod
-    def _isolate_by_team_role(users: list[User], roles: list[str]) -> list[User]:
-        """Return User objects that have given team role or all if roles is empty."""
-        if not roles:
-            return users
-        iso: list[User] = []
-        for user in users:
-            if any([getattr(user, f"{role}_in") for role in roles]):
-                iso.append(user)
-        return iso
 
 
 def main(_args: list[str] | None = None) -> int:
@@ -97,38 +61,11 @@ def main(_args: list[str] | None = None) -> int:
         help_="List of team ids to include in report.",
         nargs="*",
     )
-    runtime.add_argument(
-        flag="--base_roles",
-        default="",
-        help_="List of base roles applied as a filter to report. ",
-        choices=[
-            "admin",
-            "limited_user",
-            "observer",
-            "owner",
-            "read_only_user",
-            "restricted_access",
-            "read_only_limited_user",
-            "user",
-        ],
-        nargs="*",
-    )
-    runtime.add_argument(
-        flag="--team_roles",
-        default="",
-        help_="List of team roles applied as a filter to report.",
-        choices=["manager", "observer", "responder"],
-        nargs="*",
-    )
     args = runtime.parse_args(_args)
     runtime.init_logging()
 
     print("Starting User Report, this pull can take some time.")
-    report = UserReport(args.token).run_report(
-        team_ids=args.team_ids,
-        base_roles=args.base_roles,
-        team_roles=args.team_roles,
-    )
+    report = UserReport(args.token).run_report(team_ids=args.team_ids)
 
     now = DateTool.utcnow_isotime().split("T")[0]
     IOUtil.write_to_file(f"user_report{now}.csv", report)
