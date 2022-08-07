@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 
-from pd_utils.model import User
+from pd_utils.model import UserReportRow
 from pd_utils.util import DateTool
 from pd_utils.util import IOUtil
 from pd_utils.util import PagerDutyQuery
@@ -41,10 +41,10 @@ class UserReport:
                 "team_ids[]": team_ids or None,
             }
         )
-        users: list[User] = []
+        users: list[UserReportRow] = []
         for resps in self._query.run_iter(limit=self._max_query_limit):
             self.log.debug("Pulling %d users...", self._max_query_limit)
-            users.extend([User.build_from(resp) for resp in resps])
+            users.extend([UserReportRow.build_from(resp) for resp in resps])
         self.log.info("Discovered %d users in total.", len(users))
 
         return IOUtil.to_csv_string(users)

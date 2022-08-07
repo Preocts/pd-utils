@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pd_utils.model import User
+from pd_utils.model import UserReportRow
 
 USER = Path("tests/fixture/user_report/user.json").read_text()
 
@@ -11,7 +11,7 @@ USER = Path("tests/fixture/user_report/user.json").read_text()
 def test_model() -> None:
     resp = json.loads(USER)
 
-    model = User.build_from(resp)
+    model = UserReportRow.build_from(resp)
 
     assert model.name == "Preocts"
     assert model.email == "preocts@preocts.com"
@@ -41,7 +41,7 @@ def test_model_no_teams() -> None:
     resp = json.loads(USER)
     resp["teams"] = None
 
-    model = User.build_from(resp)
+    model = UserReportRow.build_from(resp)
 
     assert model.manager_in is None
 
@@ -50,7 +50,7 @@ def test_model_no_contact_methods() -> None:
     resp = json.loads(USER)
     resp["contact_methods"] = None
 
-    model = User.build_from(resp)
+    model = UserReportRow.build_from(resp)
 
     assert model.has_email is False
 
@@ -59,6 +59,6 @@ def test_model_no_notificatoin_rules() -> None:
     resp = json.loads(USER)
     resp["notification_rules"] = None
 
-    model = User.build_from(resp)
+    model = UserReportRow.build_from(resp)
 
     assert model.high_urgency_email_delay is None
