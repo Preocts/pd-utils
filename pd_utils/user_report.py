@@ -107,6 +107,8 @@ class UserReport:
         for user_team in user_teams:
             team = f"{user_team.team_name}, {user_team.team_id}"
             attr = f"{user_team.team_role}_in"
+            if getattr(user_map[user_team.user_id], attr) is None:
+                setattr(user_map[user_team.user_id], attr, [])
             getattr(user_map[user_team.user_id], attr).append(team)
 
 

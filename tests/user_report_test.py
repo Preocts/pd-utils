@@ -90,9 +90,17 @@ def test_get_team_memberships(report: UserReport):
 
 def test_hydrate_team_membership(report: UserReport):
     mock_map = {"PSIUGWW": UserReportRow.build_from(json.loads(USER))}
-    mock_teams = [UserTeam("PSIUGWW", "PLNRGGS", "Egg Carton", "responder")]
+    mock_teams = [
+        UserTeam("PSIUGWW", "PLNRGGS", "Egg Carton", "responder"),
+        UserTeam("PSIUGWW", "PLNRGGS", "Eggmins", "responder"),
+        UserTeam("PSIUGWW", "PLNRGGS", "Bonus Hunt", "observer"),
+    ]
 
     report._hydrate_team_membership(mock_map, mock_teams)
 
     assert mock_map["PSIUGWW"].responder_in
+    assert mock_map["PSIUGWW"].observer_in
+    assert mock_map["PSIUGWW"].manager_in is None
     assert "Egg Carton, PLNRGGS" in mock_map["PSIUGWW"].responder_in
+    assert "Eggmins, PLNRGGS" in mock_map["PSIUGWW"].responder_in
+    assert "Bonus Hunt, PLNRGGS" in mock_map["PSIUGWW"].observer_in
