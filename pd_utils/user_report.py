@@ -50,13 +50,8 @@ class UserReport:
             }
         )
         self.log.info("Pulling user object, this can take a momement.")
-        user_map: dict[str, UserReportRow] = {}
-        teams: set[_Team] = set()
-        for resps in self._query.run_iter(limit=self._max_query_limit):
-            for resp in resps:
-                user = UserReportRow.build_from(resp)
-                user_map[user.id] = user
-                teams = teams.union(self._extract_teams(resp["teams"]))
+
+        user_map, teams = self._get_users_and_teams()
 
         self.log.info("Discovered %d users and %d teams.", len(user_map), len(teams))
 
@@ -65,6 +60,17 @@ class UserReport:
         self._hydrate_team_membership(user_map, user_teams)
 
         return IOUtil.to_csv_string(list(user_map.values()))
+
+    def _get_users_and_teams(self) -> tuple[dict[str, UserReportRow], set[_Team]]:
+        """Pull all users and unique team names discovered."""
+        user_map: dict[str, UserReportRow] = {}
+        teams: set[_Team] = set()
+        for resps in self._query.run_iter(limit=self._max_query_limit):
+            for resp in resps:
+                user = UserReportRow.build_from(resp)
+                user_map[user.id] = user
+                teams = teams.union(self._extract_teams(resp["teams"]))
+        return user_map, teams
 
     def _extract_teams(self, teams: list[dict[str, Any]] | None) -> set[_Team]:
         """Extract unique team_ids from list of teams"""
