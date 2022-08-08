@@ -20,9 +20,9 @@ def test_model() -> None:
     assert model.title == "Software Engineer"
     assert model.base_role == "user"
     assert model.timezone == "America/New_York"
-    assert model.observer_in is None
-    assert model.responder_in == ["Egg Carton"]
-    assert model.manager_in == ["Eggmins"]
+    assert model.observer_in == []
+    assert model.responder_in == []
+    assert model.manager_in == []
     assert model.has_email is True
     assert model.has_push is False
     assert model.has_sms is True
@@ -44,7 +44,7 @@ def test_model_no_teams() -> None:
 
     model = UserReportRow.build_from(resp)
 
-    assert model.manager_in is None
+    assert model.manager_in == []
 
 
 def test_model_no_contact_methods() -> None:

@@ -50,9 +50,9 @@ class UserReportRow(Base):
             title=resp["job_title"],
             base_role=resp["role"],
             timezone=resp["time_zone"],
-            observer_in=UserReportRow._get_teams(resp["teams"] or [], "observer"),
-            responder_in=UserReportRow._get_teams(resp["teams"] or [], "responder"),
-            manager_in=UserReportRow._get_teams(resp["teams"] or [], "manager"),
+            observer_in=[],
+            responder_in=[],
+            manager_in=[],
             has_email="email_contact_method" in cmethods,
             has_push="push_notification_contact_method" in cmethods,
             has_sms="sms_contact_method" in cmethods,
@@ -67,11 +67,6 @@ class UserReportRow(Base):
             low_urgency_sms_delay=UserReportRow._get_delay(nrules, "sms", "low"),
             low_urgency_phone_delay=UserReportRow._get_delay(nrules, "phone", "low"),
         )
-
-    @staticmethod
-    def _get_teams(teams: list[dict[str, Any]], role: str) -> list[str] | None:
-        """Return team names of teams with matching role."""
-        return [team["name"] for team in teams if team["default_role"] == role] or None
 
     @staticmethod
     def _get_delay(
