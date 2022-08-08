@@ -1,0 +1,10 @@
+{
+    "user": {
+        "id": "PSIUGWW",
+        "type": "user_reference",
+        "summary": "Preocts",
+        "self": "https://api.pagerduty.com/users/PSIUGWW",
+        "html_url": "https://preocts.pagerduty.com/users/PSIUGWW"
+    },
+    "role": "manager"
+}

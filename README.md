@@ -10,6 +10,7 @@
   - [Requirements](#requirements)
   - [Command line scripts:](#command-line-scripts)
 - [Available scripts](#available-scripts)
+  - [User Report](#user-report)
   - [Coverage Gap Report](#coverage-gap-report)
   - [Close Old Incidents](#close-old-incidents)
   - [Safelist Gatherer](#safelist-gatherer)
@@ -61,6 +62,62 @@ with `python -m pd_utils.script_name`
 ---
 
 # Available scripts
+
+## User Report
+
+Pull detailed information about all user accounts or filter by one or more
+`team_ids`.
+
+**Outputs:**
+
+| filename                  | contents    |
+| ------------------------- | ----------- |
+| user_reportYYYY-MM-DD.csv | User report |
+
+**Report Columns**
+
+| Column Name              | Description                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| name                     | User's full name                                                                                       |
+| email                    | User's Email                                                                                           |
+| title                    | User's job title                                                                                       |
+| base_role                | Base role of user account                                                                              |
+| timezone                 | Timezone user's account is registered in                                                               |
+| observer_in              | List of team names user is an observer in                                                              |
+| responder_in             | List of team names user is a responder in                                                              |
+| manager_in               | List of team names user is a manager in                                                                |
+| has_email                | Has at least one email contact method                                                                  |
+| has_push                 | Has at least one PagerDuty mobile app push contact method                                              |
+| has_sms                  | Has at least one SMS (text message) contact method                                                     |
+| has_phone                | Has at least one Phone contact method                                                                  |
+| has_blocked              | One or more contact methods are listed as blocked by PagerDuty                                         |
+| high_urgency_email_delay | List of delay times (in minutes) before high urgency notification is send to email contant method      |
+| high_urgency_push_delay  | List of delay times (in minutes) before high urgency notification is send to mobile app contant method |
+| high_urgency_sms_delay   | List of delay times (in minutes) before high urgency notification is send to sms contant method        |
+| high_urgency_phone_delay | List of delay times (in minutes) before high urgency notification is send to phonecontant method       |
+| low_urgency_email_delay  | List of delay times (in minutes) before low urgency notification is send to email contant method       |
+| low_urgency_push_delay   | List of delay times (in minutes) before low urgency notification is send to mobile app contant method  |
+| low_urgency_sms_delay    | List of delay times (in minutes) before low urgency notification is send to sms contant method         |
+| low_urgency_phone_delay  | List of delay times (in minutes) before low urgency notification is send to phone contant method       |
+
+
+```shell
+usage: user-report [-h] [--token TOKEN] [--logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--team_ids [TEAM_IDS [TEAM_IDS ...]]]
+
+Pagerduty command line utilities.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
+  --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Logging level (default: $LOGGING_LEVEL | INFO)
+  --team_ids [TEAM_IDS [TEAM_IDS ...]]
+                        List of team ids to include in report.
+
+See: https://github.com/Preocts/pagerduty-utils
+```
+
+---
 
 ## Coverage Gap Report
 

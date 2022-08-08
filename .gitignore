@@ -15,3 +15,4 @@ __pycache__/
 schedule_gap_report*
 escalation_rule_gap_report*
 close-old-incidents-*.csv
+user_report*.csv
