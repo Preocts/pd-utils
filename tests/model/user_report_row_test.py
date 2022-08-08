@@ -13,6 +13,7 @@ def test_model() -> None:
 
     model = UserReportRow.build_from(resp)
 
+    assert model.id == "PSIUGWW"
     assert model.name == "Preocts"
     assert model.email == "preocts@preocts.com"
     assert model.html_url == "https://preocts.pagerduty.com/users/PSIUGWW"

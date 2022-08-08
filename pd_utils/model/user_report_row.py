@@ -10,6 +10,7 @@ from pd_utils.model.base import Base
 class UserReportRow(Base):
     """Empty User object for User Report."""
 
+    id: str = ""  # noqa: A003
     name: str = ""
     html_url: str = ""
     email: str = ""
@@ -42,6 +43,7 @@ class UserReportRow(Base):
         )
         nrules = resp["notification_rules"] or []
         return cls(
+            id=resp["id"],
             name=resp["name"],
             html_url=resp["html_url"],
             email=resp["email"],
