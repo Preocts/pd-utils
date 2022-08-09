@@ -9,10 +9,8 @@ from typing import NamedTuple
 
 from pd_utils.model import UserReportRow
 from pd_utils.model import UserTeam
-from pd_utils.util import DateTool
 from pd_utils.util import IOUtil
 from pd_utils.util import PagerDutyQuery
-from pd_utils.util import RuntimeInit
 
 
 class _Team(NamedTuple):
@@ -65,11 +63,10 @@ class UserReport:
         """Pull all users and unique team names discovered."""
         user_map: dict[str, UserReportRow] = {}
         teams: set[_Team] = set()
-        for resps in self._query.run_iter(limit=self._max_query_limit):
-            for resp in resps:
-                user = UserReportRow.build_from(resp)
-                user_map[user.id] = user
-                teams = teams.union(self._extract_teams(resp["teams"]))
+        for resp in self._query.run_iter(limit=self._max_query_limit):
+            user = UserReportRow.build_from(resp)
+            user_map[user.id] = user
+            teams = teams.union(self._extract_teams(resp["teams"]))
         return user_map, teams
 
     def _extract_teams(self, teams: list[dict[str, Any]] | None) -> set[_Team]:
@@ -78,23 +75,20 @@ class UserReport:
 
     def _get_team_memberships(self, teams: set[_Team]) -> list[UserTeam]:
         """Get membership details of teams from PagerDuty."""
-        # TODO: REFACTOR
-
         self.log.info("Pulling membership details of %d teams.", len(teams))
         self._query.set_query_params({})
         user_teams: list[UserTeam] = []
         for team_name, team_id in teams:
             self._query.set_query_target(f"/teams/{team_id}/members", "members")
-            for resp in self._query.run_iter(limit=self._max_query_limit):
-                for member in resp:
-                    user_teams.append(
-                        UserTeam(
-                            user_id=member["user"]["id"],
-                            team_id=team_id,
-                            team_name=team_name,
-                            team_role=member["role"],
-                        )
+            for member in self._query.run_iter(limit=self._max_query_limit):
+                user_teams.append(
+                    UserTeam(
+                        user_id=member["user"]["id"],
+                        team_id=team_id,
+                        team_name=team_name,
+                        team_role=member["role"],
                     )
+                )
         self.log.info("Discovered %d membership details.", len(user_teams))
         return user_teams
 
@@ -110,31 +104,3 @@ class UserReport:
             if getattr(user_map[user_team.user_id], attr) is None:
                 setattr(user_map[user_team.user_id], attr, [])
             getattr(user_map[user_team.user_id], attr).append(team)
-
-
-def main(_args: list[str] | None = None) -> int:
-    """Main point of entry for CLI."""
-    runtime = RuntimeInit("user-report")
-    runtime.init_secrets()
-    runtime.add_standard_arguments(email=False)
-    runtime.add_argument(
-        flag="--team_ids",
-        default="",
-        help_="List of team ids to include in report.",
-        nargs="*",
-    )
-    args = runtime.parse_args(_args)
-    runtime.init_logging()
-
-    print("Starting User Report, this pull can take some time.")
-    report = UserReport(args.token).run_report(team_ids=args.team_ids)
-
-    now = DateTool.utcnow_isotime().split("T")[0]
-    IOUtil.write_to_file(f"user_report{now}.csv", report)
-    print(f"Report saved to user_report{now}.csv")
-
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

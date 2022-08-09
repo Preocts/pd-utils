@@ -78,6 +78,6 @@ def test_run_iter(query: PagerDutyQuery) -> None:
     with patch.object(query._http, "get", side_effect=resp):
 
         for result in query.run_iter(limit=1):
-            results.extend(result)
+            results.append(result)
 
     assert not {r["id"] for r in results} - EXPECTED_IDS

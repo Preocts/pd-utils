@@ -8,9 +8,9 @@ from unittest.mock import patch
 import pytest
 from httpx import Response
 
-from pd_utils import close_old_incidents
-from pd_utils.close_old_incidents import CloseOldIncidents
 from pd_utils.model import Incident
+from pd_utils.tool import close_old_incidents
+from pd_utils.tool.close_old_incidents import CloseOldIncidents
 from pd_utils.util import DateTool
 
 INCIDENTS_RESP = Path("tests/fixture/close-incidents/incidents.json").read_text()
@@ -66,7 +66,7 @@ def test_get_newest_log_entry(closer: CloseOldIncidents) -> None:
 
 def test_get_all_incidents(closer: CloseOldIncidents) -> None:
     resps = json.loads(INCIDENTS_RESP)
-    resp_gen = (r["incidents"] for r in resps)
+    resp_gen = (r["incidents"][0] for r in resps)
 
     with patch.object(closer._query, "run_iter", return_value=resp_gen):
 
@@ -113,47 +113,6 @@ def test_isolate_inactive_incidents(
     assert results[0].incident_number == 4
 
 
-def test_main_no_optional_args() -> None:
-
-    with patch.object(close_old_incidents, "CloseOldIncidents") as mockclass:
-        close_old_incidents.main(["--token", "mock", "--email", "mock@mock.com"])
-        kwargs = mockclass.call_args.kwargs
-        print(mockclass.call_args.kwargs)
-
-    assert kwargs == {
-        "token": "mock",
-        "email": "mock@mock.com",
-        "close_after_days": 10,
-        "close_active": False,
-        "close_priority": False,
-    }
-
-
-def test_main_optional_args() -> None:
-
-    with patch.object(close_old_incidents, "CloseOldIncidents") as mockclass:
-        close_old_incidents.main(
-            [
-                "--token",
-                "mock",
-                "--email",
-                "mock@mock.com",
-                "--close-active",
-                "--close-priority",
-                "--close-after-days=5",
-            ]
-        )
-        kwargs = mockclass.call_args.kwargs
-
-    assert kwargs == {
-        "token": "mock",
-        "email": "mock@mock.com",
-        "close_after_days": 5,
-        "close_active": True,
-        "close_priority": True,
-    }
-
-
 @pytest.mark.parametrize(("status", "expect"), ((200, True), (400, False)))
 def test_resolve_incident(status: int, expect: bool, closer: CloseOldIncidents) -> None:
     resps = [Response(status)]
@@ -191,7 +150,7 @@ def test_close_incidents(
 
 
 def test_run_empty_results(closer: CloseOldIncidents) -> None:
-    resp_gen = [[]]  # type: ignore
+    resp_gen = []  # type: ignore
     with patch.object(closer._query, "run_iter", return_value=resp_gen) as http:
         closer.run()
 
@@ -199,7 +158,7 @@ def test_run_empty_results(closer: CloseOldIncidents) -> None:
 
 
 def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
-    resp_gen = [[]]  # type: ignore
+    resp_gen = []  # type: ignore
     closer._close_active = True
     with patch.object(closer._query, "run_iter", return_value=resp_gen):
         with patch.object(closer, "_isolate_inactive_incidents") as avoid:
