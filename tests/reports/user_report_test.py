@@ -7,11 +7,10 @@ from unittest.mock import patch
 
 import pytest
 
-from pd_utils import user_report
 from pd_utils.model import UserReportRow
 from pd_utils.model import UserTeam
-from pd_utils.user_report import _Team
-from pd_utils.user_report import UserReport
+from pd_utils.reports.user_report import _Team
+from pd_utils.reports.user_report import UserReport
 
 USER = Path("tests/fixture/user_report/user.json").read_text()
 MEMBERS = Path("tests/fixture/user_report/members.json").read_text()
@@ -24,16 +23,6 @@ EXPECTED_TEAMS = {
 @pytest.fixture
 def report() -> UserReport:
     return UserReport("mock")
-
-
-def test_main() -> None:
-
-    with patch.object(user_report.UserReport, "run_report", return_value="") as mock:
-
-        result = user_report.main([])
-
-        assert mock.call_count == 1
-        assert result == 0
 
 
 def test_run_report(report: UserReport) -> None:

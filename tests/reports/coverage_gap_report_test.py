@@ -7,10 +7,9 @@ from unittest.mock import patch
 import pytest
 from httpx import Response
 
-from pd_utils import coverage_gap_report
-from pd_utils.coverage_gap_report import CoverageGapReport
 from pd_utils.model import ScheduleCoverage
 from pd_utils.model.escalation_rule_coverage import EscalationRuleCoverage
+from pd_utils.reports.coverage_gap_report import CoverageGapReport
 
 SCHEDULES_RESP = Path("tests/fixture/cov_gap/schedule_list.json").read_text()
 EXPECTED_IDS = {"PG3MDI8", "P4TPEME"}
@@ -161,14 +160,6 @@ def test_hydrate_escalation_coverage_flags(mapped_search: CoverageGapReport) -> 
     assert mapped_search._escalation_map["mock1"].is_fully_covered is False
     assert mapped_search._escalation_map["mock2"].is_fully_covered is True
     assert mapped_search._escalation_map["mock3"].is_fully_covered is False
-
-
-def test_main():
-    with patch.object(coverage_gap_report.CoverageGapReport, "run_reports") as mocked:
-        mocked.return_value = ("", "")
-        coverage_gap_report.main(_args=[])
-
-        mocked.assert_called_once()
 
 
 def test_run_clean_exits_no_work(search: CoverageGapReport) -> None:

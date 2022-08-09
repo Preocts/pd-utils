@@ -8,9 +8,9 @@ from unittest.mock import patch
 import pytest
 from httpx import Response
 
-from pd_utils import close_old_incidents
-from pd_utils.close_old_incidents import CloseOldIncidents
 from pd_utils.model import Incident
+from pd_utils.tools import close_old_incidents
+from pd_utils.tools.close_old_incidents import CloseOldIncidents
 from pd_utils.util import DateTool
 
 INCIDENTS_RESP = Path("tests/fixture/close-incidents/incidents.json").read_text()
@@ -111,47 +111,6 @@ def test_isolate_inactive_incidents(
 
     assert len(results) == 1
     assert results[0].incident_number == 4
-
-
-def test_main_no_optional_args() -> None:
-
-    with patch.object(close_old_incidents, "CloseOldIncidents") as mockclass:
-        close_old_incidents.main(["--token", "mock", "--email", "mock@mock.com"])
-        kwargs = mockclass.call_args.kwargs
-        print(mockclass.call_args.kwargs)
-
-    assert kwargs == {
-        "token": "mock",
-        "email": "mock@mock.com",
-        "close_after_days": 10,
-        "close_active": False,
-        "close_priority": False,
-    }
-
-
-def test_main_optional_args() -> None:
-
-    with patch.object(close_old_incidents, "CloseOldIncidents") as mockclass:
-        close_old_incidents.main(
-            [
-                "--token",
-                "mock",
-                "--email",
-                "mock@mock.com",
-                "--close-active",
-                "--close-priority",
-                "--close-after-days=5",
-            ]
-        )
-        kwargs = mockclass.call_args.kwargs
-
-    assert kwargs == {
-        "token": "mock",
-        "email": "mock@mock.com",
-        "close_after_days": 5,
-        "close_active": True,
-        "close_priority": True,
-    }
 
 
 @pytest.mark.parametrize(("status", "expect"), ((200, True), (400, False)))
