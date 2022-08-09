@@ -160,9 +160,7 @@ class CloseOldIncidents:
         self._query.set_query_target("/incidents", "incidents")
         self._query.set_query_params(params)
 
-        incidents: list[dict[str, Any]] = []
-        for resp in self._query.run_iter(self._max_query_limit):
-            incidents.extend(resp)
+        incidents = [inc for inc in self._query.run_iter(self._max_query_limit)]
 
         self.log.info("Discovered %d incidents.", len(incidents))
         return [Incident.build_from(incident) for incident in incidents]

@@ -66,7 +66,7 @@ def test_get_newest_log_entry(closer: CloseOldIncidents) -> None:
 
 def test_get_all_incidents(closer: CloseOldIncidents) -> None:
     resps = json.loads(INCIDENTS_RESP)
-    resp_gen = (r["incidents"] for r in resps)
+    resp_gen = (r["incidents"][0] for r in resps)
 
     with patch.object(closer._query, "run_iter", return_value=resp_gen):
 
@@ -191,7 +191,7 @@ def test_close_incidents(
 
 
 def test_run_empty_results(closer: CloseOldIncidents) -> None:
-    resp_gen = [[]]  # type: ignore
+    resp_gen = []  # type: ignore
     with patch.object(closer._query, "run_iter", return_value=resp_gen) as http:
         closer.run()
 
@@ -199,7 +199,7 @@ def test_run_empty_results(closer: CloseOldIncidents) -> None:
 
 
 def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
-    resp_gen = [[]]  # type: ignore
+    resp_gen = []  # type: ignore
     closer._close_active = True
     with patch.object(closer._query, "run_iter", return_value=resp_gen):
         with patch.object(closer, "_isolate_inactive_incidents") as avoid:
