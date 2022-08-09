@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from pd_utils.tools import simple_alert
+from pd_utils.tool import simple_alert
 
 
 @pytest.fixture

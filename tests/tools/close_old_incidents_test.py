@@ -9,8 +9,8 @@ import pytest
 from httpx import Response
 
 from pd_utils.model import Incident
-from pd_utils.tools import close_old_incidents
-from pd_utils.tools.close_old_incidents import CloseOldIncidents
+from pd_utils.tool import close_old_incidents
+from pd_utils.tool.close_old_incidents import CloseOldIncidents
 from pd_utils.util import DateTool
 
 INCIDENTS_RESP = Path("tests/fixture/close-incidents/incidents.json").read_text()

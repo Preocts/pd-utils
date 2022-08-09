@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import pytest
 
-from pd_utils.reports import safelist_gatherer as pdip
+from pd_utils.report import safelist_gatherer as pdip
 
 EU_SAMPLE = Path("tests/fixture/safelist_gatherer/sample_eu.json").read_text()
 US_SAMPLE = Path("tests/fixture/safelist_gatherer/sample_us.json").read_text()

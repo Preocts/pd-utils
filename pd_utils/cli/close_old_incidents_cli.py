@@ -1,7 +1,7 @@
 """Command line handler for CloseOldIncidents."""
 from __future__ import annotations
 
-from pd_utils.tools import CloseOldIncidents
+from pd_utils.tool import CloseOldIncidents
 from pd_utils.util import RuntimeInit
 
 

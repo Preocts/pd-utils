@@ -9,8 +9,8 @@ import pytest
 
 from pd_utils.model import UserReportRow
 from pd_utils.model import UserTeam
-from pd_utils.reports.user_report import _Team
-from pd_utils.reports.user_report import UserReport
+from pd_utils.report.user_report import _Team
+from pd_utils.report.user_report import UserReport
 
 USER = Path("tests/fixture/user_report/user.json").read_text()
 MEMBERS = Path("tests/fixture/user_report/members.json").read_text()

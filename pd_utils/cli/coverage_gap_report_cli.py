@@ -3,7 +3,7 @@ Command line handler for CoverageGapReport
 """
 from __future__ import annotations
 
-from pd_utils.reports import CoverageGapReport
+from pd_utils.report import CoverageGapReport
 from pd_utils.util import DateTool
 from pd_utils.util import IOUtil
 from pd_utils.util import RuntimeInit

@@ -9,7 +9,7 @@ from httpx import Response
 
 from pd_utils.model import ScheduleCoverage
 from pd_utils.model.escalation_rule_coverage import EscalationRuleCoverage
-from pd_utils.reports.coverage_gap_report import CoverageGapReport
+from pd_utils.report.coverage_gap_report import CoverageGapReport
 
 SCHEDULES_RESP = Path("tests/fixture/cov_gap/schedule_list.json").read_text()
 EXPECTED_IDS = {"PG3MDI8", "P4TPEME"}

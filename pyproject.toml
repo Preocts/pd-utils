@@ -53,8 +53,8 @@ homepage = "https://github.com/Preocts/pd-utils"
 # CLI scripts if needed
 [project.scripts]
 coverage-gap-report = "pd_utils.cli.coverage_gap_report_cli:main"
-safelist-gatherer = "pd_utils.safelist_gatherer:console_output"
-simple-alert = "pd_utils.simple_alert:console_handler"
+safelist-gatherer = "pd_utils.report.safelist_gatherer:console_output"
+simple-alert = "pd_utils.tool.simple_alert:console_handler"
 close-old-incidents = "pd_utils.cli.close_old_incidents_cli:main"
 user-report = "pd_utils.cli.user_report_cli:main"
 
