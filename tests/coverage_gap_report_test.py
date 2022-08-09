@@ -172,7 +172,7 @@ def test_main():
 
 
 def test_run_clean_exits_no_work(search: CoverageGapReport) -> None:
-    resp_gen = [[]]  # type: ignore
+    resp_gen = []  # type: ignore
 
     with patch.object(search._query, "run_iter", return_value=resp_gen):
         search.run_reports()
