@@ -103,7 +103,7 @@ class PagerDutyQuery:
 
         return resp.json()[self.object_name], more_, total_
 
-    def run_iter(self, limit: int = 100) -> Generator[list[dict[str, Any]], None, None]:
+    def run_iter(self, limit: int = 100) -> Generator[dict[str, Any], None, None]:
         """Iterate through responses from PagerDuty API."""
         more = True
         offset = 0
@@ -111,4 +111,4 @@ class PagerDutyQuery:
         while more:
             results, more, _ = self.run(offset=offset, limit=limit)
             offset += limit
-            yield results
+            yield from results
