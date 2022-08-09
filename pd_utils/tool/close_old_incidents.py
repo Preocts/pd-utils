@@ -12,7 +12,6 @@ from pd_utils.model import Incident
 from pd_utils.util import DateTool
 from pd_utils.util import IOUtil
 from pd_utils.util import PagerDutyQuery
-from pd_utils.util import RuntimeInit
 
 TITLE_TAG = "[closed by automation]"
 NOW = datetime.datetime.utcnow()
@@ -160,9 +159,7 @@ class CloseOldIncidents:
         self._query.set_query_target("/incidents", "incidents")
         self._query.set_query_params(params)
 
-        incidents: list[dict[str, Any]] = []
-        for resp in self._query.run_iter(self._max_query_limit):
-            incidents.extend(resp)
+        incidents = [inc for inc in self._query.run_iter(self._max_query_limit)]
 
         self.log.info("Discovered %d incidents.", len(incidents))
         return [Incident.build_from(incident) for incident in incidents]
@@ -208,47 +205,3 @@ class CloseOldIncidents:
         if not resp.is_success:
             self.log.error("Error resolving incident: %s, '%s'", incident_id, resp.text)
         return resp.is_success
-
-
-def main(args_in: list[str] | None = None) -> int:
-    """Run the script."""
-    runtime = RuntimeInit("close-old-incidents")
-    runtime.init_secrets()
-    runtime.add_standard_arguments()
-    runtime.add_argument(
-        "--inputfile",
-        "",
-        "Provide a csv file to work from. If not provided a new file will be created.",
-    )
-    runtime.add_argument(
-        flag="--close-after-days",
-        default="10",
-        help_="Incidents older than this are considered for closing (default: 10)",
-    )
-    runtime.parser.add_argument(
-        "--close-active",
-        action="store_true",
-        help="When present, old incidents are closed regardless of activity",
-    )
-    runtime.parser.add_argument(
-        "--close-priority",
-        action="store_true",
-        help="When present, consider incidents with priority for closing",
-    )
-    runtime.init_logging()
-    args = runtime.parse_args(args_in)
-
-    client = CloseOldIncidents(
-        token=runtime.secrets.get("PAGERDUTY_TOKEN"),
-        email=runtime.secrets.get("PAGERDUTY_EMAIL"),
-        close_after_days=int(args.close_after_days),
-        close_active=args.close_active,
-        close_priority=args.close_priority,
-    )
-    client.run(args.inputfile)
-
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
