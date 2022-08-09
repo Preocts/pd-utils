@@ -63,7 +63,7 @@ def test_extract_team_ids(
 @pytest.mark.parametrize(
     ("users", "expected_len"),
     (
-        ([[json.loads(USER)]], 1),
+        ([json.loads(USER)], 1),
         ([], 0),
     ),
 )
@@ -79,7 +79,7 @@ def test_get_users_and_teams(
 
 
 def test_get_team_memberships(report: UserReport):
-    resp = [[json.loads(MEMBERS)]]
+    resp = [json.loads(MEMBERS)]
 
     with patch.object(report._query, "run_iter", return_value=resp):
 

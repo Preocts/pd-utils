@@ -65,11 +65,10 @@ class UserReport:
         """Pull all users and unique team names discovered."""
         user_map: dict[str, UserReportRow] = {}
         teams: set[_Team] = set()
-        for resps in self._query.run_iter(limit=self._max_query_limit):
-            for resp in resps:
-                user = UserReportRow.build_from(resp)
-                user_map[user.id] = user
-                teams = teams.union(self._extract_teams(resp["teams"]))
+        for resp in self._query.run_iter(limit=self._max_query_limit):
+            user = UserReportRow.build_from(resp)
+            user_map[user.id] = user
+            teams = teams.union(self._extract_teams(resp["teams"]))
         return user_map, teams
 
     def _extract_teams(self, teams: list[dict[str, Any]] | None) -> set[_Team]:
@@ -78,23 +77,20 @@ class UserReport:
 
     def _get_team_memberships(self, teams: set[_Team]) -> list[UserTeam]:
         """Get membership details of teams from PagerDuty."""
-        # TODO: REFACTOR
-
         self.log.info("Pulling membership details of %d teams.", len(teams))
         self._query.set_query_params({})
         user_teams: list[UserTeam] = []
         for team_name, team_id in teams:
             self._query.set_query_target(f"/teams/{team_id}/members", "members")
-            for resp in self._query.run_iter(limit=self._max_query_limit):
-                for member in resp:
-                    user_teams.append(
-                        UserTeam(
-                            user_id=member["user"]["id"],
-                            team_id=team_id,
-                            team_name=team_name,
-                            team_role=member["role"],
-                        )
+            for member in self._query.run_iter(limit=self._max_query_limit):
+                user_teams.append(
+                    UserTeam(
+                        user_id=member["user"]["id"],
+                        team_id=team_id,
+                        team_name=team_name,
+                        team_role=member["role"],
                     )
+                )
         self.log.info("Discovered %d membership details.", len(user_teams))
         return user_teams
 
