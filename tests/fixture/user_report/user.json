@@ -7,7 +7,7 @@
     "billed": true,
     "role": "user",
     "description": null,
-    "invitation_sent": false,
+    "invitation_sent": true,
     "job_title": "Software Engineer",
     "teams": [
         {

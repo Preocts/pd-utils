@@ -17,6 +17,7 @@ class UserReportRow(Base):
     title: str = ""
     base_role: str = ""
     timezone: str = ""
+    invite_pending: bool = False
     observer_in: list[str] | None = None
     responder_in: list[str] | None = None
     manager_in: list[str] | None = None
@@ -50,6 +51,7 @@ class UserReportRow(Base):
             title=resp["job_title"],
             base_role=resp["role"],
             timezone=resp["time_zone"],
+            invite_pending=resp["invitation_sent"],
             has_email="email_contact_method" in cmethods,
             has_push="push_notification_contact_method" in cmethods,
             has_sms="sms_contact_method" in cmethods,
