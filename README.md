@@ -78,11 +78,13 @@ Pull detailed information about all user accounts or filter by one or more
 
 | Column Name              | Description                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| id                       | User's PagerDuty ID                                                                                    |
 | name                     | User's full name                                                                                       |
 | email                    | User's Email                                                                                           |
 | title                    | User's job title                                                                                       |
 | base_role                | Base role of user account                                                                              |
 | timezone                 | Timezone user's account is registered in                                                               |
+| invite_pending           | True if user has not logged into account after creation.                                               |
 | observer_in              | List of team names user is an observer in                                                              |
 | responder_in             | List of team names user is a responder in                                                              |
 | manager_in               | List of team names user is a manager in                                                                |
