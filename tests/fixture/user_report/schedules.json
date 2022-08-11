@@ -1,0 +1,65 @@
+{
+    "schedules": [
+        {
+            "id": "PG3MDI8",
+            "type": "schedule",
+            "summary": "Preocts Coverage Gaps",
+            "self": "https://api.pagerduty.com/schedules/PG3MDI8",
+            "html_url": "https://preocts.pagerduty.com/schedules/PG3MDI8",
+            "name": "Preocts Coverage Gaps",
+            "time_zone": "America/New_York",
+            "description": null,
+            "web_cal_url": "webcal://preocts.pagerduty.com/private/eb45a91692a66516ed9c017e64655e6bf3df9925d66b5fc7861d3cf98e240cd8/feed/PG3MDI8",
+            "http_cal_url": "https://preocts.pagerduty.com/private/eb45a91692a66516ed9c017e64655e6bf3df9925d66b5fc7861d3cf98e240cd8/feed/PG3MDI8",
+            "personal_web_cal_url": "webcal://preocts.pagerduty.com/private/eb45a91692a66516ed9c017e64655e6bf3df9925d66b5fc7861d3cf98e240cd8/feed/PG3MDI8?user_id=PSIUGWW",
+            "personal_http_cal_url": "https://preocts.pagerduty.com/private/eb45a91692a66516ed9c017e64655e6bf3df9925d66b5fc7861d3cf98e240cd8/feed/PG3MDI8?user_id=PSIUGWW",
+            "users": [
+                {
+                    "id": "PSIUGWW",
+                    "type": "user_reference",
+                    "summary": "Preocts",
+                    "self": "https://api.pagerduty.com/users/PSIUGWW",
+                    "html_url": "https://preocts.pagerduty.com/users/PSIUGWW"
+                },
+                {
+                    "id": "PSIUGWX",
+                    "type": "user_reference",
+                    "summary": "Not Preocts",
+                    "self": "https://api.pagerduty.com/users/PSIUGWW",
+                    "html_url": "https://preocts.pagerduty.com/users/PSIUGWW"
+                }
+            ],
+            "escalation_policies": [],
+            "teams": []
+        },
+        {
+            "id": "P4TPEME",
+            "type": "schedule",
+            "summary": "Preocts Full Coverage",
+            "self": "https://api.pagerduty.com/schedules/P4TPEME",
+            "html_url": "https://preocts.pagerduty.com/schedules/P4TPEME",
+            "name": "Preocts Full Coverage",
+            "time_zone": "America/New_York",
+            "description": null,
+            "web_cal_url": "webcal://preocts.pagerduty.com/private/eb45a91692a66516ed9c017e64655e6bf3df9925d66b5fc7861d3cf98e240cd8/feed/P4TPEME",
+            "http_cal_url": "https://preocts.pagerduty.com/private/eb45a91692a66516ed9c017e64655e6bf3df9925d66b5fc7861d3cf98e240cd8/feed/P4TPEME",
+            "personal_web_cal_url": "webcal://preocts.pagerduty.com/private/eb45a91692a66516ed9c017e64655e6bf3df9925d66b5fc7861d3cf98e240cd8/feed/P4TPEME?user_id=PSIUGWW",
+            "personal_http_cal_url": "https://preocts.pagerduty.com/private/eb45a91692a66516ed9c017e64655e6bf3df9925d66b5fc7861d3cf98e240cd8/feed/P4TPEME?user_id=PSIUGWW",
+            "users": [
+                {
+                    "id": "PSIUGWW",
+                    "type": "user_reference",
+                    "summary": "Preocts",
+                    "self": "https://api.pagerduty.com/users/PSIUGWW",
+                    "html_url": "https://preocts.pagerduty.com/users/PSIUGWW"
+                }
+            ],
+            "escalation_policies": [],
+            "teams": []
+        }
+    ],
+    "limit": 1,
+    "offset": 1,
+    "total": null,
+    "more": false
+}
