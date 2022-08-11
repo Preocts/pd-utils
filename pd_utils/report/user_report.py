@@ -47,27 +47,48 @@ class UserReport:
                 "team_ids[]": team_ids or None,
             }
         )
-        self.log.info("Pulling user object, this can take a momement.")
 
+        # user_map is a key:pair of {pagerduty_id: UserReportRow}
         user_map, teams = self._get_users_and_teams()
-
-        self.log.info("Discovered %d users and %d teams.", len(user_map), len(teams))
 
         user_teams = self._get_team_memberships(teams)
 
+        scheduled_users = self._get_users_on_schedules()
+
         self._hydrate_team_membership(user_map, user_teams)
+        self._hydrate_on_schedule_flag(user_map, scheduled_users)
 
         return IOUtil.to_csv_string(list(user_map.values()))
 
     def _get_users_and_teams(self) -> tuple[dict[str, UserReportRow], set[_Team]]:
         """Pull all users and unique team names discovered."""
+        self.log.info("Pulling user object, this can take a momement.")
+
         user_map: dict[str, UserReportRow] = {}
         teams: set[_Team] = set()
         for resp in self._query.run_iter(limit=self._max_query_limit):
             user = UserReportRow.build_from(resp)
             user_map[user.id] = user
             teams = teams.union(self._extract_teams(resp["teams"]))
+
+        self.log.info("Discovered %d users and %d teams.", len(user_map), len(teams))
+
         return user_map, teams
+
+    def _get_users_on_schedules(self) -> set[str]:
+        """Return unique PagerDuty IDs of users found on schedules."""
+        self.log.info("Pulling schedules for user population.")
+
+        self._query.set_query_params({})
+        self._query.set_query_target("/schedules", "schedules")
+        users: set[str] = set()
+        for schedule in self._query.run_iter():
+            for user in schedule["users"] or []:
+                users.add(user["id"])
+
+        self.log.info("Discovered %d users on schedules.", len(users))
+
+        return users
 
     def _extract_teams(self, teams: list[dict[str, Any]] | None) -> set[_Team]:
         """Extract unique team_ids from list of teams"""
@@ -75,7 +96,9 @@ class UserReport:
 
     def _get_team_memberships(self, teams: set[_Team]) -> list[UserTeam]:
         """Get membership details of teams from PagerDuty."""
+
         self.log.info("Pulling membership details of %d teams.", len(teams))
+
         self._query.set_query_params({})
         user_teams: list[UserTeam] = []
         for team_name, team_id in teams:
@@ -89,7 +112,9 @@ class UserReport:
                         team_role=member["role"],
                     )
                 )
+
         self.log.info("Discovered %d membership details.", len(user_teams))
+
         return user_teams
 
     def _hydrate_team_membership(
@@ -104,3 +129,12 @@ class UserReport:
             if getattr(user_map[user_team.user_id], attr) is None:
                 setattr(user_map[user_team.user_id], attr, [])
             getattr(user_map[user_team.user_id], attr).append(team)
+
+    def _hydrate_on_schedule_flag(
+        self,
+        user_map: dict[str, UserReportRow],
+        scheduled_user_ids: set[str],
+    ) -> None:
+        """Hydrate on_schedule flage into user_map."""
+        for user_id in scheduled_user_ids:
+            user_map[user_id].on_schedule = True
