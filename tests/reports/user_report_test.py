@@ -18,6 +18,8 @@ EXPECTED_TEAMS = {
     _Team("Egg Carton", "PLNRGGS"),
     _Team("Eggmins", "PHB3G42"),
 }
+SCHEDULES = Path("tests/fixture/user_report/schedules.json").read_text()
+EXPECTED_USERS = {"PSIUGWW", "PSIUGWX"}
 
 
 @pytest.fixture
@@ -27,7 +29,8 @@ def report() -> UserReport:
 
 def test_run_report(report: UserReport) -> None:
     with patch.object(report, "_get_users_and_teams", return_value=(dict(), set())):
-        result = report.run_report()
+        with patch.object(report, "_get_users_on_schedules", return_value=set()):
+            result = report.run_report()
 
     assert result == ""
 
@@ -93,3 +96,25 @@ def test_hydrate_team_membership(report: UserReport):
     assert "Egg Carton, PLNRGGS" in mock_map["PSIUGWW"].responder_in
     assert "Eggmins, PLNRGGS" in mock_map["PSIUGWW"].responder_in
     assert "Bonus Hunt, PLNRGGS" in mock_map["PSIUGWW"].observer_in
+
+
+def test_get_users_on_schedules(report: UserReport) -> None:
+    resp = json.loads(SCHEDULES)["schedules"]
+
+    with patch.object(report._query, "run_iter", return_value=resp):
+        result = report._get_users_on_schedules()
+
+    assert result == EXPECTED_USERS
+
+
+def test_hydrate_on_schedule_flag(report: UserReport):
+    mock_map = {
+        "PSIUGWW": UserReportRow.build_from(json.loads(USER)),
+        "PSIUGWX": UserReportRow.build_from(json.loads(USER)),
+    }
+    mock_scheduled = {"PSIUGWW"}
+
+    report._hydrate_on_schedule_flag(mock_map, mock_scheduled)
+
+    assert mock_map["PSIUGWW"].on_schedule is True
+    assert mock_map["PSIUGWX"].on_schedule is False
