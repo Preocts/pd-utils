@@ -21,6 +21,7 @@ def test_model() -> None:
     assert model.base_role == "user"
     assert model.timezone == "America/New_York"
     assert model.invite_pending is True
+    assert model.on_schedule is False
     assert model.observer_in is None
     assert model.responder_in is None
     assert model.manager_in is None

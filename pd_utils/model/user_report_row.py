@@ -18,6 +18,7 @@ class UserReportRow(Base):
     base_role: str = ""
     timezone: str = ""
     invite_pending: bool = False
+    on_schedule: bool = False
     observer_in: list[str] | None = None
     responder_in: list[str] | None = None
     manager_in: list[str] | None = None
