@@ -6,8 +6,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import httpx
-
 from pd_utils.model import EscalationRuleCoverage as EscCoverage
 from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import DateTool
@@ -41,12 +39,6 @@ class CoverageGapReport:
         self._schedule_map: dict[str, SchCoverage] = {}
         self._escalation_map: dict[str, EscCoverage] = {}
 
-        headers = {
-            "Accept": "application/vnd.pagerduty+json;version=2",
-            "Authorization": f"Token token={token}",
-        }
-
-        self._http = httpx.Client(headers=headers)
         self._query = PagerDutyQuery(token)
 
     def run_reports(self) -> tuple[str, str]:
@@ -72,12 +64,12 @@ class CoverageGapReport:
             "until": self._until,
             "time_zone": "Etc/UTC",
         }
-        resp = self._http.get(f"{self.base_url}/schedules/{schedule_id}", params=params)
+        result = self._query.get(f"/schedules/{schedule_id}", params=params)
 
-        if resp.is_success:
-            schobj = SchCoverage.build_from(resp.json())
+        if result:
+            schobj = SchCoverage.build_from(result)
         else:
-            self.log.error("Error fetching schedule %s - %s", schedule_id, resp.text)
+            self.log.error("Error fetching schedule %s", schedule_id)
 
         return schobj
 
@@ -86,7 +78,7 @@ class CoverageGapReport:
         self._query.set_query_target("/escalation_policies", "escalation_policies")
         self._query.set_query_params({})
 
-        eps = [ep for ep in self._query.run_iter(self._max_query_limit)]
+        eps = [ep for ep in self._query.query_iter(self._max_query_limit)]
 
         self.log.info("Discovered %d escalation policies.", len(eps))
         return eps
@@ -96,7 +88,7 @@ class CoverageGapReport:
         self._query.set_query_target("/schedules", "schedules")
         self._query.set_query_params({})
 
-        sch_ids = [sch["id"] for sch in self._query.run_iter(self._max_query_limit)]
+        sch_ids = [sch["id"] for sch in self._query.query_iter(self._max_query_limit)]
 
         self.log.info("Discovered %d schedules.", len(sch_ids))
         return set(sch_ids)

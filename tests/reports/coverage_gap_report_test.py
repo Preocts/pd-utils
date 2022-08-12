@@ -5,7 +5,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from httpx import Response
 
 from pd_utils.model import ScheduleCoverage
 from pd_utils.model.escalation_rule_coverage import EscalationRuleCoverage
@@ -116,8 +115,7 @@ def mapped_search(search: CoverageGapReport) -> CoverageGapReport:
 
 
 def test_get_schedule_coverage(search: CoverageGapReport) -> None:
-    resps = [Response(200, content=SCHEDULE_RESP)]
-    with patch.object(search._http, "get", side_effect=resps):
+    with patch.object(search._query, "get", return_value=json.loads(SCHEDULE_RESP)):
 
         result = search.get_schedule_coverage("mock")
 
@@ -126,8 +124,7 @@ def test_get_schedule_coverage(search: CoverageGapReport) -> None:
 
 
 def test_get_schedule_coverage_fails(search: CoverageGapReport) -> None:
-    resps = [Response(401, content="Failure")]
-    with patch.object(search._http, "get", side_effect=resps):
+    with patch.object(search._query, "get", return_value=None):
 
         result = search.get_schedule_coverage("mock")
 
@@ -165,5 +162,5 @@ def test_hydrate_escalation_coverage_flags(mapped_search: CoverageGapReport) -> 
 def test_run_clean_exits_no_work(search: CoverageGapReport) -> None:
     resp_gen = []  # type: ignore
 
-    with patch.object(search._query, "run_iter", return_value=resp_gen):
+    with patch.object(search._query, "query_iter", return_value=resp_gen):
         search.run_reports()

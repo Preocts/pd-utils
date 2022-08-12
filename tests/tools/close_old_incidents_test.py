@@ -56,7 +56,7 @@ def test_get_newest_log_entry(closer: CloseOldIncidents) -> None:
     mock_resp = json.loads(LOG_ENTRIES_RESP)["log_entries"][0]
     resp = [([mock_resp], None, None)]
 
-    with patch.object(closer._query, "run", side_effect=resp) as mockrun:
+    with patch.object(closer._query, "_query", side_effect=resp) as mockrun:
 
         results = closer._get_newest_log_entry("mock")
 
@@ -68,7 +68,7 @@ def test_get_all_incidents(closer: CloseOldIncidents) -> None:
     resps = json.loads(INCIDENTS_RESP)
     resp_gen = (r["incidents"][0] for r in resps)
 
-    with patch.object(closer._query, "run_iter", return_value=resp_gen):
+    with patch.object(closer._query, "query_iter", return_value=resp_gen):
 
         results = closer._get_all_incidents()
 
@@ -151,7 +151,7 @@ def test_close_incidents(
 
 def test_run_empty_results(closer: CloseOldIncidents) -> None:
     resp_gen = []  # type: ignore
-    with patch.object(closer._query, "run_iter", return_value=resp_gen) as http:
+    with patch.object(closer._query, "query_iter", return_value=resp_gen) as http:
         closer.run()
 
         assert http.call_count == 1
@@ -160,7 +160,7 @@ def test_run_empty_results(closer: CloseOldIncidents) -> None:
 def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
     resp_gen = []  # type: ignore
     closer._close_active = True
-    with patch.object(closer._query, "run_iter", return_value=resp_gen):
+    with patch.object(closer._query, "query_iter", return_value=resp_gen):
         with patch.object(closer, "_isolate_inactive_incidents") as avoid:
             closer.run()
 

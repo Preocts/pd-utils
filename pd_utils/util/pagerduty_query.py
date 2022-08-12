@@ -61,7 +61,7 @@ class PagerDutyQuery:
         self._route = route
         self._object_name = object_name
 
-    def run(
+    def _query(
         self,
         *,
         offset: int = 0,
@@ -103,12 +103,26 @@ class PagerDutyQuery:
 
         return resp.json()[self.object_name], more_, total_
 
-    def run_iter(self, limit: int = 100) -> Generator[dict[str, Any], None, None]:
+    def query_iter(self, limit: int = 100) -> Generator[dict[str, Any], None, None]:
         """Iterate through responses from PagerDuty API."""
         more = True
         offset = 0
 
         while more:
-            results, more, _ = self.run(offset=offset, limit=limit)
+            results, more, _ = self._query(offset=offset, limit=limit)
             offset += limit
             yield from results
+
+    def get(
+        self,
+        route: str,
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
+        """Get result from given route endpoint."""
+        params = {k: v for k, v in params.items() if v is not None} if params else None
+        resp = self._http.get(f"{self.base_url}{route}", params=params)
+
+        if not resp.is_success:
+            self.log.error("Get failed: %d, %s", resp.status_code, resp.text)
+
+        return resp.json() if resp.is_success else None

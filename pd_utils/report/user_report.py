@@ -40,16 +40,8 @@ class UserReport:
         Args:
             team_ids: List of team ids to isolate in report
         """
-        self._query.set_query_target("/users", "users")
-        self._query.set_query_params(
-            {
-                "include[]": ["notification_rules", "contact_methods"],
-                "team_ids[]": team_ids or None,
-            }
-        )
-
         # user_map is a key:pair of {pagerduty_id: UserReportRow}
-        user_map, teams = self._get_users_and_teams()
+        user_map, teams = self._get_users_and_teams(team_ids)
 
         user_teams = self._get_team_memberships(teams)
 
@@ -60,13 +52,24 @@ class UserReport:
 
         return IOUtil.to_csv_string(list(user_map.values()))
 
-    def _get_users_and_teams(self) -> tuple[dict[str, UserReportRow], set[_Team]]:
+    def _get_users_and_teams(
+        self,
+        team_ids: list[str] | None = None,
+    ) -> tuple[dict[str, UserReportRow], set[_Team]]:
         """Pull all users and unique team names discovered."""
         self.log.info("Pulling user object, this can take a momement.")
 
+        self._query.set_query_target("/users", "users")
+        self._query.set_query_params(
+            {
+                "include[]": ["notification_rules", "contact_methods"],
+                "team_ids[]": team_ids or None,
+            }
+        )
+
         user_map: dict[str, UserReportRow] = {}
         teams: set[_Team] = set()
-        for resp in self._query.run_iter(limit=self._max_query_limit):
+        for resp in self._query.query_iter(limit=self._max_query_limit):
             user = UserReportRow.build_from(resp)
             user_map[user.id] = user
             teams = teams.union(self._extract_teams(resp["teams"]))
@@ -82,9 +85,10 @@ class UserReport:
         self._query.set_query_params({})
         self._query.set_query_target("/schedules", "schedules")
         users: set[str] = set()
-        for schedule in self._query.run_iter():
+        for schedule in self._query.query_iter():
             for user in schedule["users"] or []:
-                users.add(user["id"])
+                if "deleted_at" not in user:
+                    users.add(user["id"])
 
         self.log.info("Discovered %d users on schedules.", len(users))
 
@@ -103,7 +107,7 @@ class UserReport:
         user_teams: list[UserTeam] = []
         for team_name, team_id in teams:
             self._query.set_query_target(f"/teams/{team_id}/members", "members")
-            for member in self._query.run_iter(limit=self._max_query_limit):
+            for member in self._query.query_iter(limit=self._max_query_limit):
                 user_teams.append(
                     UserTeam(
                         user_id=member["user"]["id"],
@@ -137,4 +141,5 @@ class UserReport:
     ) -> None:
         """Hydrate on_schedule flage into user_map."""
         for user_id in scheduled_user_ids:
-            user_map[user_id].on_schedule = True
+            if user_id in user_map:
+                user_map[user_id].on_schedule = True

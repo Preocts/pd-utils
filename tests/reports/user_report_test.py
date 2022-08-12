@@ -64,7 +64,7 @@ def test_get_users_and_teams(
     users: list[dict[str, Any]],
     expected_len: int,
 ) -> None:
-    with patch.object(report._query, "run_iter", return_value=users):
+    with patch.object(report._query, "query_iter", return_value=users):
         user_map, teams = report._get_users_and_teams()
 
     assert len(user_map) == expected_len
@@ -73,7 +73,7 @@ def test_get_users_and_teams(
 def test_get_team_memberships(report: UserReport):
     resp = [json.loads(MEMBERS)]
 
-    with patch.object(report._query, "run_iter", return_value=resp):
+    with patch.object(report._query, "query_iter", return_value=resp):
 
         result = report._get_team_memberships(EXPECTED_TEAMS)
     print(result)
@@ -101,7 +101,7 @@ def test_hydrate_team_membership(report: UserReport):
 def test_get_users_on_schedules(report: UserReport) -> None:
     resp = json.loads(SCHEDULES)["schedules"]
 
-    with patch.object(report._query, "run_iter", return_value=resp):
+    with patch.object(report._query, "query_iter", return_value=resp):
         result = report._get_users_on_schedules()
 
     assert result == EXPECTED_USERS
@@ -112,7 +112,7 @@ def test_hydrate_on_schedule_flag(report: UserReport):
         "PSIUGWW": UserReportRow.build_from(json.loads(USER)),
         "PSIUGWX": UserReportRow.build_from(json.loads(USER)),
     }
-    mock_scheduled = {"PSIUGWW"}
+    mock_scheduled = {"PSIUGWW", "PSIUGXX"}
 
     report._hydrate_on_schedule_flag(mock_map, mock_scheduled)
 
