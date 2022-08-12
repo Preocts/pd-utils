@@ -53,7 +53,7 @@ def test_run_success(query: PagerDutyQuery) -> None:
     query.set_query_target("/incidents", "incidents")
 
     with patch.object(query._http, "get", side_effect=resp):
-        result, more, count = query.run()
+        result, more, count = query._query()
 
     assert more is True
     assert count == 0
@@ -66,7 +66,7 @@ def test_run_failure(query: PagerDutyQuery) -> None:
 
     with patch.object(query._http, "get", side_effect=resp):
         with pytest.raises(query.QueryError):
-            query.run()
+            query._query()
 
 
 def test_run_iter(query: PagerDutyQuery) -> None:
@@ -77,7 +77,26 @@ def test_run_iter(query: PagerDutyQuery) -> None:
 
     with patch.object(query._http, "get", side_effect=resp):
 
-        for result in query.run_iter(limit=1):
+        for result in query.query_iter(limit=1):
             results.append(result)
 
     assert not {r["id"] for r in results} - EXPECTED_IDS
+
+
+def test_get_success(query: PagerDutyQuery) -> None:
+    resp = Response(200, content='{"test": "pass"}')
+    with patch.object(query._http, "get", return_value=resp) as mock:
+        result = query.get("/incidents", {"param1": None, "param2": "Hi"})
+        kwargs = mock.call_args.kwargs
+
+    assert result
+    assert result["test"] == "pass"
+    assert kwargs["params"] == {"param2": "Hi"}
+
+
+def test_get_failure(query: PagerDutyQuery) -> None:
+    resp = Response(400)
+    with patch.object(query._http, "get", return_value=resp):
+        result = query.get("/incidents")
+
+    assert result is None
