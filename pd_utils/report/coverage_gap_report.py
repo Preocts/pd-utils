@@ -86,7 +86,7 @@ class CoverageGapReport:
         self._query.set_query_target("/escalation_policies", "escalation_policies")
         self._query.set_query_params({})
 
-        eps = [ep for ep in self._query.run_iter(self._max_query_limit)]
+        eps = [ep for ep in self._query.query_iter(self._max_query_limit)]
 
         self.log.info("Discovered %d escalation policies.", len(eps))
         return eps
@@ -96,7 +96,7 @@ class CoverageGapReport:
         self._query.set_query_target("/schedules", "schedules")
         self._query.set_query_params({})
 
-        sch_ids = [sch["id"] for sch in self._query.run_iter(self._max_query_limit)]
+        sch_ids = [sch["id"] for sch in self._query.query_iter(self._max_query_limit)]
 
         self.log.info("Discovered %d schedules.", len(sch_ids))
         return set(sch_ids)

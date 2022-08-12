@@ -159,7 +159,7 @@ class CloseOldIncidents:
         self._query.set_query_target("/incidents", "incidents")
         self._query.set_query_params(params)
 
-        incidents = [inc for inc in self._query.run_iter(self._max_query_limit)]
+        incidents = [inc for inc in self._query.query_iter(self._max_query_limit)]
 
         self.log.info("Discovered %d incidents.", len(incidents))
         return [Incident.build_from(incident) for incident in incidents]
@@ -171,7 +171,7 @@ class CloseOldIncidents:
             object_name="log_entries",
         )
         self._query.set_query_params({"time_zone": "UTC"})
-        resp, _, _ = self._query.run(limit=1)
+        resp, _, _ = self._query._query(limit=1)
         return resp[0]
 
     def _close_incidents(

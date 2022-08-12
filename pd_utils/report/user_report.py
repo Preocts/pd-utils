@@ -69,7 +69,7 @@ class UserReport:
 
         user_map: dict[str, UserReportRow] = {}
         teams: set[_Team] = set()
-        for resp in self._query.run_iter(limit=self._max_query_limit):
+        for resp in self._query.query_iter(limit=self._max_query_limit):
             user = UserReportRow.build_from(resp)
             user_map[user.id] = user
             teams = teams.union(self._extract_teams(resp["teams"]))
@@ -85,7 +85,7 @@ class UserReport:
         self._query.set_query_params({})
         self._query.set_query_target("/schedules", "schedules")
         users: set[str] = set()
-        for schedule in self._query.run_iter():
+        for schedule in self._query.query_iter():
             for user in schedule["users"] or []:
                 if "deleted_at" not in user:
                     users.add(user["id"])
@@ -107,7 +107,7 @@ class UserReport:
         user_teams: list[UserTeam] = []
         for team_name, team_id in teams:
             self._query.set_query_target(f"/teams/{team_id}/members", "members")
-            for member in self._query.run_iter(limit=self._max_query_limit):
+            for member in self._query.query_iter(limit=self._max_query_limit):
                 user_teams.append(
                     UserTeam(
                         user_id=member["user"]["id"],

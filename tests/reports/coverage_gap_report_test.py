@@ -165,5 +165,5 @@ def test_hydrate_escalation_coverage_flags(mapped_search: CoverageGapReport) -> 
 def test_run_clean_exits_no_work(search: CoverageGapReport) -> None:
     resp_gen = []  # type: ignore
 
-    with patch.object(search._query, "run_iter", return_value=resp_gen):
+    with patch.object(search._query, "query_iter", return_value=resp_gen):
         search.run_reports()
