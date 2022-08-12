@@ -112,7 +112,7 @@ def test_hydrate_on_schedule_flag(report: UserReport):
         "PSIUGWW": UserReportRow.build_from(json.loads(USER)),
         "PSIUGWX": UserReportRow.build_from(json.loads(USER)),
     }
-    mock_scheduled = {"PSIUGWW"}
+    mock_scheduled = {"PSIUGWW", "PSIUGXX"}
 
     report._hydrate_on_schedule_flag(mock_map, mock_scheduled)
 

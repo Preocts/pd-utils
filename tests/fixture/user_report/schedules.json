@@ -27,6 +27,14 @@
                     "summary": "Not Preocts",
                     "self": "https://api.pagerduty.com/users/PSIUGWW",
                     "html_url": "https://preocts.pagerduty.com/users/PSIUGWW"
+                },
+                {
+                    "id": "PSIUGWX",
+                    "type": "user_reference",
+                    "summary": "Not Preocts",
+                    "self": null,
+                    "html_url": "https://preocts.pagerduty.com/users/PSIUGWW",
+                    "deleted_at": "2022-08-01T02:38:25Z"
                 }
             ],
             "escalation_policies": [],
