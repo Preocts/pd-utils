@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any
 from typing import Generator
@@ -7,7 +8,7 @@ from typing import Generator
 import httpx
 
 
-class PagerDutyQuery:
+class PagerDutyAPI:
     """Pull from API list endpoints."""
 
     log = logging.getLogger(__name__)
@@ -126,3 +127,18 @@ class PagerDutyQuery:
             self.log.error("Get failed: %d, %s", resp.status_code, resp.text)
 
         return resp.json() if resp.is_success else None
+
+    def put(
+        self,
+        route: str,
+        payload: dict[str, Any] | None = None,
+    ) -> str | dict[str, Any] | None:
+        """Put payload to given route endpoint."""
+        resp = self._http.put(f"{self.base_url}{route}", json=payload)
+
+        if not resp.is_success:
+            self.log.error("Put failed: %d, %s", resp.status_code, resp.text)
+        try:
+            return resp.json() if resp.is_success else None
+        except json.JSONDecodeError:
+            return resp.text if resp.text else None
