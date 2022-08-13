@@ -6,12 +6,10 @@ import logging
 from typing import Any
 from typing import TypedDict
 
-import httpx
-
 from pd_utils.model import Incident
 from pd_utils.util import DateTool
 from pd_utils.util import IOUtil
-from pd_utils.util import PagerDutyQuery
+from pd_utils.util import PagerDutyAPI
 
 TITLE_TAG = "[closed by automation]"
 NOW = datetime.datetime.utcnow()
@@ -32,7 +30,6 @@ class CloseOldIncidents:
     """Use to clean up and close old incidents in PagerDuty."""
 
     log = logging.getLogger(__name__)
-    base_url = "https://api.pagerduty.com"
 
     def __init__(
         self,
@@ -54,14 +51,7 @@ class CloseOldIncidents:
             close_priority: When true, consider incidents with priority for closing
         """
 
-        headers = {
-            "Accept": "application/vnd.pagerduty+json;version=2",
-            "Authorization": f"Token token={token}",
-            "From": email,
-        }
-
-        self._http = httpx.Client(headers=headers)
-        self._query = PagerDutyQuery(token, email)
+        self._pdapi = PagerDutyAPI(token, email)
         self._max_query_limit = 100
         self._close_after_seconds = close_after_days * 86_400
         self._close_active = close_active
@@ -156,22 +146,22 @@ class CloseOldIncidents:
             "statuses[]": ["triggered", "acknowledged"],
             "date_range": "all",
         }
-        self._query.set_query_target("/incidents", "incidents")
-        self._query.set_query_params(params)
+        self._pdapi.set_query_target("/incidents", "incidents")
+        self._pdapi.set_query_params(params)
 
-        incidents = [inc for inc in self._query.query_iter(self._max_query_limit)]
+        incidents = [inc for inc in self._pdapi.query_iter(self._max_query_limit)]
 
         self.log.info("Discovered %d incidents.", len(incidents))
         return [Incident.build_from(incident) for incident in incidents]
 
     def _get_newest_log_entry(self, incident_id: str) -> dict[str, Any]:
         """Pull most recent log entry from incident."""
-        self._query.set_query_target(
+        self._pdapi.set_query_target(
             route=f"/incidents/{incident_id}/log_entries",
             object_name="log_entries",
         )
-        self._query.set_query_params({"time_zone": "UTC"})
-        resp, _, _ = self._query._query(limit=1)
+        self._pdapi.set_query_params({"time_zone": "UTC"})
+        resp, _, _ = self._pdapi._query(limit=1)
         return resp[0]
 
     def _close_incidents(
@@ -200,8 +190,7 @@ class CloseOldIncidents:
                 "title": f"{TITLE_TAG} {title}",
             }
         }
-        url = f"{self.base_url}/incidents/{incident_id}"
-        resp = self._http.put(url=url, json=payload)
-        if not resp.is_success:
-            self.log.error("Error resolving incident: %s, '%s'", incident_id, resp.text)
-        return resp.is_success
+        resp = self._pdapi.put(route=f"/incidents/{incident_id}", payload=payload)
+        if not resp:
+            self.log.error("Error resolving incident %s", incident_id)
+        return bool(resp)
