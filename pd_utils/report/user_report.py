@@ -10,7 +10,7 @@ from typing import NamedTuple
 from pd_utils.model import UserReportRow
 from pd_utils.model import UserTeam
 from pd_utils.util import IOUtil
-from pd_utils.util import PagerDutyQuery
+from pd_utils.util import PagerDutyAPI
 
 
 class _Team(NamedTuple):
@@ -30,7 +30,7 @@ class UserReport:
         Args:
             max_query_limit: Number of objects to request at once from PD (max: 100)
         """
-        self._query = PagerDutyQuery(token)
+        self._query = PagerDutyAPI(token)
         self._max_query_limit = max_query_limit
 
     def run_report(self, team_ids: list[str] | None = None) -> str:

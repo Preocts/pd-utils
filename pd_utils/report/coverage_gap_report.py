@@ -10,7 +10,7 @@ from pd_utils.model import EscalationRuleCoverage as EscCoverage
 from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import DateTool
 from pd_utils.util import IOUtil
-from pd_utils.util import PagerDutyQuery
+from pd_utils.util import PagerDutyAPI
 
 
 class CoverageGapReport:
@@ -39,7 +39,7 @@ class CoverageGapReport:
         self._schedule_map: dict[str, SchCoverage] = {}
         self._escalation_map: dict[str, EscCoverage] = {}
 
-        self._query = PagerDutyQuery(token)
+        self._query = PagerDutyAPI(token)
 
     def run_reports(self) -> tuple[str, str]:
         """
