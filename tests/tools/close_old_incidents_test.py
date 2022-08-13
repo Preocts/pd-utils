@@ -6,7 +6,6 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
-from httpx import Response
 
 from pd_utils.model import Incident
 from pd_utils.tool import close_old_incidents
@@ -56,7 +55,7 @@ def test_get_newest_log_entry(closer: CloseOldIncidents) -> None:
     mock_resp = json.loads(LOG_ENTRIES_RESP)["log_entries"][0]
     resp = [([mock_resp], None, None)]
 
-    with patch.object(closer._query, "_query", side_effect=resp) as mockrun:
+    with patch.object(closer._pdapi, "_query", side_effect=resp) as mockrun:
 
         results = closer._get_newest_log_entry("mock")
 
@@ -68,7 +67,7 @@ def test_get_all_incidents(closer: CloseOldIncidents) -> None:
     resps = json.loads(INCIDENTS_RESP)
     resp_gen = (r["incidents"][0] for r in resps)
 
-    with patch.object(closer._query, "query_iter", return_value=resp_gen):
+    with patch.object(closer._pdapi, "query_iter", return_value=resp_gen):
 
         results = closer._get_all_incidents()
 
@@ -113,20 +112,23 @@ def test_isolate_inactive_incidents(
     assert results[0].incident_number == 4
 
 
-@pytest.mark.parametrize(("status", "expect"), ((200, True), (400, False)))
-def test_resolve_incident(status: int, expect: bool, closer: CloseOldIncidents) -> None:
-    resps = [Response(status)]
+@pytest.mark.parametrize(("mesp", "expect"), (({"some": "resp"}, True), (None, False)))
+def test_resolve_incident(
+    mesp: dict[str, Any] | None,
+    expect: bool,
+    closer: CloseOldIncidents,
+) -> None:
     incident_id = "123"
     title = "This is a test"
     expected_title = f"{close_old_incidents.TITLE_TAG} {title}"
-    with patch.object(closer._http, "put", side_effect=resps) as http:
+    with patch.object(closer._pdapi, "put", return_value=mesp) as http:
 
         result = closer._resolve_incident(incident_id, title)
         kwargs = http.call_args.kwargs
 
-    assert incident_id in kwargs["url"]
-    assert kwargs["json"]["incident"]["status"] == "resolved"
-    assert kwargs["json"]["incident"]["title"] == expected_title
+    assert incident_id in kwargs["route"]
+    assert kwargs["payload"]["incident"]["status"] == "resolved"
+    assert kwargs["payload"]["incident"]["title"] == expected_title
     assert result is expect
 
 
@@ -134,14 +136,9 @@ def test_close_incidents(
     closer: CloseOldIncidents,
     mock_incidents: list[Incident],
 ) -> None:
-    resps = [
-        Response(200),
-        Response(400),
-        Response(200),
-        Response(400),
-    ]
+    resps = [True, False, True, False]
 
-    with patch.object(closer._http, "put", side_effect=resps):
+    with patch.object(closer._pdapi, "put", side_effect=resps):
 
         success, error = closer._close_incidents(mock_incidents)
 
@@ -151,7 +148,7 @@ def test_close_incidents(
 
 def test_run_empty_results(closer: CloseOldIncidents) -> None:
     resp_gen = []  # type: ignore
-    with patch.object(closer._query, "query_iter", return_value=resp_gen) as http:
+    with patch.object(closer._pdapi, "query_iter", return_value=resp_gen) as http:
         closer.run()
 
         assert http.call_count == 1
@@ -160,7 +157,7 @@ def test_run_empty_results(closer: CloseOldIncidents) -> None:
 def test_run_empty_ignore_activity(closer: CloseOldIncidents) -> None:
     resp_gen = []  # type: ignore
     closer._close_active = True
-    with patch.object(closer._query, "query_iter", return_value=resp_gen):
+    with patch.object(closer._pdapi, "query_iter", return_value=resp_gen):
         with patch.object(closer, "_isolate_inactive_incidents") as avoid:
             closer.run()
 
