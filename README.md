@@ -4,7 +4,6 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Preocts/pd-utils/main.svg)](https://results.pre-commit.ci/latest/github/Preocts/pd-utils/main)
 [![Python package](https://github.com/Preocts/pd-utils/actions/workflows/python-tests.yml/badge.svg?branch=main)](https://github.com/Preocts/pd-utils/actions/workflows/python-tests.yml)
-[![codecov](https://codecov.io/gh/Preocts/pd-utils/branch/main/graph/badge.svg?token=ABlYTJMwLN)](https://codecov.io/gh/Preocts/pd-utils)
 
 - [PagerDuty Utils](#pagerduty-utils)
   - [Requirements](#requirements)
