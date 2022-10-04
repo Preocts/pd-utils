@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import csv
+from collections.abc import Sequence
 from io import StringIO
 from typing import Any
-from collections.abc import Sequence
 
 from pd_utils.model.base import Base
 
