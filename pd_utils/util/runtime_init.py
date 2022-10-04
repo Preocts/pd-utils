@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import argparse
 import logging
-from typing import Sequence
+from collections.abc import Sequence
 
 from secretbox import SecretBox
 from secretbox.envfile_loader import EnvFileLoader
