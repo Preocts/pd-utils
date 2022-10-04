@@ -9,7 +9,7 @@ from typing import NamedTuple
 
 from pd_utils.model import UserReportRow
 from pd_utils.model import UserTeam
-from pd_utils.util import IOUtil
+from pd_utils.util import ioutil
 from pd_utils.util import PagerDutyAPI
 
 
@@ -50,7 +50,7 @@ class UserReport:
         self._hydrate_team_membership(user_map, user_teams)
         self._hydrate_on_schedule_flag(user_map, scheduled_users)
 
-        return IOUtil.to_csv_string(list(user_map.values()))
+        return ioutil.to_csv_string(list(user_map.values()))
 
     def _get_users_and_teams(
         self,

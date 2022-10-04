@@ -9,7 +9,7 @@ from typing import Any
 from pd_utils.model import EscalationRuleCoverage as EscCoverage
 from pd_utils.model import ScheduleCoverage as SchCoverage
 from pd_utils.util import datetool
-from pd_utils.util import IOUtil
+from pd_utils.util import ioutil
 from pd_utils.util import PagerDutyAPI
 
 
@@ -52,8 +52,8 @@ class CoverageGapReport:
         self._map_escalation_coverages(self._get_all_escalations())
         self._hydrate_escalation_coverage_flags()
 
-        schedule = IOUtil.to_csv_string(list(self._schedule_map.values()))
-        escalation = IOUtil.to_csv_string(list(self._escalation_map.values()))
+        schedule = ioutil.to_csv_string(list(self._schedule_map.values()))
+        escalation = ioutil.to_csv_string(list(self._escalation_map.values()))
         return schedule, escalation
 
     def get_schedule_coverage(self, schedule_id: str) -> SchCoverage | None:
