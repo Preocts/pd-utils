@@ -10,7 +10,7 @@ import pytest
 from pd_utils.model import Incident
 from pd_utils.tool import close_old_incidents
 from pd_utils.tool.close_old_incidents import CloseOldIncidents
-from pd_utils.util import DateTool
+from pd_utils.util import datetool
 
 INCIDENTS_RESP = Path("tests/fixture/close-incidents/incidents.json").read_text()
 EXPECTED_IDS = {"Q36LM3UBN4V94O", "Q3YH44AL350A23"}
@@ -37,10 +37,10 @@ def closer() -> CloseOldIncidents:
 
 @pytest.fixture
 def mock_incidents() -> list[Incident]:
-    now = DateTool.utcnow_isotime()
-    days5 = DateTool.add_offset(now, days=-5)
-    days10 = DateTool.add_offset(now, days=-9, minutes=-58)
-    old = DateTool.add_offset(now, days=-10, minutes=-1)
+    now = datetool.utcnow_isotime()
+    days5 = datetool.add_offset(now, days=-5)
+    days10 = datetool.add_offset(now, days=-9, minutes=-58)
+    old = datetool.add_offset(now, days=-10, minutes=-1)
     incs = [
         Incident("a", 1, "New", now, "triggered", now, True, "high"),
         Incident("b", 4, "Old", old, "triggered", old, False, "high"),

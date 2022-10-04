@@ -7,8 +7,8 @@ from typing import Any
 from typing import TypedDict
 
 from pd_utils.model import Incident
-from pd_utils.util import DateTool
-from pd_utils.util import IOUtil
+from pd_utils.util import datetool
+from pd_utils.util import ioutil
 from pd_utils.util import PagerDutyAPI
 
 TITLE_TAG = "[closed by automation]"
@@ -64,19 +64,19 @@ class CloseOldIncidents:
         if inputfile:
             self.log.info("Reading input file: %s", inputfile)
 
-            to_close_dict = IOUtil.csv_to_dict(IOUtil.read_from_file(inputfile))
+            to_close_dict = ioutil.csv_to_dict(ioutil.read_from_file(inputfile))
             to_close = [Incident(**row) for row in to_close_dict]
             self.log.info("Read %s inactives, starting actions", len(to_close))
 
             successes, errors = self._close_incidents(to_close)
 
-            IOUtil.write_to_file(
+            ioutil.write_to_file(
                 filepath=f"close-old-incidents-{filedate}.csv",
-                content=IOUtil.to_csv_string(successes),
+                content=ioutil.to_csv_string(successes),
             )
-            IOUtil.write_to_file(
+            ioutil.write_to_file(
                 filepath=f"close-old-incidents-errors-{filedate}.csv",
-                content=IOUtil.to_csv_string(errors),
+                content=ioutil.to_csv_string(errors),
             )
 
         else:
@@ -91,16 +91,16 @@ class CloseOldIncidents:
             if not self._close_active:
                 isolated = self._isolate_inactive_incidents(isolated)
 
-            IOUtil.write_to_file(
+            ioutil.write_to_file(
                 filepath=f"close-old-incidents-preview-{filedate}.csv",
-                content=IOUtil.to_csv_string(isolated),
+                content=ioutil.to_csv_string(isolated),
             )
 
     def _isolate_old_incidents(self, incidents: list[Incident]) -> list[Incident]:
         """Isolate old incidents from list of incidents."""
         old_incidents: list[Incident] = []
         for incident in incidents:
-            delta = DateTool.to_seconds(incident.created_at, NOW.isoformat())
+            delta = datetool.to_seconds(incident.created_at, NOW.isoformat())
 
             if delta > self._close_after_seconds:
                 old_incidents.append(incident)
@@ -130,7 +130,7 @@ class CloseOldIncidents:
                 self.log.info("Checking incident %s to %s", idx, idx + 100)
 
             lst_log = self._get_newest_log_entry(incident.incident_id)
-            seconds = DateTool.to_seconds(lst_log["created_at"], NOW.isoformat())
+            seconds = datetool.to_seconds(lst_log["created_at"], NOW.isoformat())
 
             if seconds > self._close_after_seconds:
                 self.log.debug("Incident %s has no activity", incident.incident_number)

@@ -8,8 +8,8 @@ from typing import Any
 
 from pd_utils.model import EscalationRuleCoverage as EscCoverage
 from pd_utils.model import ScheduleCoverage as SchCoverage
-from pd_utils.util import DateTool
-from pd_utils.util import IOUtil
+from pd_utils.util import datetool
+from pd_utils.util import ioutil
 from pd_utils.util import PagerDutyAPI
 
 
@@ -33,8 +33,8 @@ class CoverageGapReport:
             max_query_limit: Number of objects to request at once from PD (max: 100)
             look_ahead_days: Number of days to look ahead on schedule (default: 14)
         """
-        self._since = DateTool.utcnow_isotime()
-        self._until = DateTool.add_offset(self._since, days=look_ahead_days)
+        self._since = datetool.utcnow_isotime()
+        self._until = datetool.add_offset(self._since, days=look_ahead_days)
         self._max_query_limit = max_query_limit
         self._schedule_map: dict[str, SchCoverage] = {}
         self._escalation_map: dict[str, EscCoverage] = {}
@@ -52,8 +52,8 @@ class CoverageGapReport:
         self._map_escalation_coverages(self._get_all_escalations())
         self._hydrate_escalation_coverage_flags()
 
-        schedule = IOUtil.to_csv_string(list(self._schedule_map.values()))
-        escalation = IOUtil.to_csv_string(list(self._escalation_map.values()))
+        schedule = ioutil.to_csv_string(list(self._schedule_map.values()))
+        escalation = ioutil.to_csv_string(list(self._escalation_map.values()))
         return schedule, escalation
 
     def get_schedule_coverage(self, schedule_id: str) -> SchCoverage | None:
@@ -120,7 +120,7 @@ class CoverageGapReport:
 
         for ep_rule in self._escalation_map.values():
             times = self._extract_entries(ep_rule.rule_target_ids)
-            ep_rule.is_fully_covered = DateTool.is_covered(
+            ep_rule.is_fully_covered = datetool.is_covered(
                 time_slots=times,
                 range_start=self._since,
                 range_stop=self._until,

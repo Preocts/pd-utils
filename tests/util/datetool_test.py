@@ -6,8 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
-from pd_utils.util import date_tool
-from pd_utils.util import DateTool
+from pd_utils.util import datetool
 
 MOCK_NOW = datetime(2022, 12, 25, 13, 50, 30, 0)
 MOCK_ISO = "2022-12-25T13:50:30Z"
@@ -17,17 +16,17 @@ MOCK_ISO = "2022-12-25T13:50:30Z"
 def patch_datetime_utcnow(monkeypatch: MonkeyPatch) -> None:
     mock_dt = MagicMock(utcnow=MagicMock(return_value=MOCK_NOW))
 
-    monkeypatch.setattr(date_tool, "datetime", mock_dt)
+    monkeypatch.setattr(datetool, "datetime", mock_dt)
 
 
 def test_to_isotime() -> None:
-    result = DateTool.to_isotime(MOCK_NOW)
+    result = datetool.to_isotime(MOCK_NOW)
 
     assert result == MOCK_ISO
 
 
 def test_to_datetime() -> None:
-    result = DateTool.to_datetime(MOCK_ISO)
+    result = datetool.to_datetime(MOCK_ISO)
 
     assert result == MOCK_NOW
     assert result.tzinfo is None
@@ -35,7 +34,7 @@ def test_to_datetime() -> None:
 
 def test_utcnow_isotime(patch_datetime_utcnow: None) -> None:
 
-    result = date_tool.DateTool.utcnow_isotime()
+    result = datetool.utcnow_isotime()
 
     assert result == MOCK_ISO
 
@@ -43,7 +42,7 @@ def test_utcnow_isotime(patch_datetime_utcnow: None) -> None:
 def test_add_offset() -> None:
     expected = "2022-12-26T14:51:31Z"
 
-    result = DateTool.add_offset(MOCK_ISO, days=1, hours=1, minutes=1, seconds=1)
+    result = datetool.add_offset(MOCK_ISO, days=1, hours=1, minutes=1, seconds=1)
 
     assert result == expected
 
@@ -76,7 +75,7 @@ def test_add_offset() -> None:
     ),
 )
 def test_is_gapless(time_slots: list[tuple[str, str]], expected: bool) -> None:
-    assert DateTool._is_gapless(time_slots) is expected
+    assert datetool._is_gapless(time_slots) is expected
 
 
 @pytest.mark.parametrize(
@@ -142,7 +141,7 @@ def test_is_covered(
     stop: str,
     expected: bool,
 ) -> None:
-    assert DateTool.is_covered(time_slots, start, stop) is expected
+    assert datetool.is_covered(time_slots, start, stop) is expected
 
 
 @pytest.mark.parametrize(
@@ -156,6 +155,6 @@ def test_is_covered(
     ),
 )
 def test_to_seconds(from_: str, to_: str, expected: int) -> None:
-    result = DateTool.to_seconds(from_, to_)
+    result = datetool.to_seconds(from_, to_)
 
     assert result == expected

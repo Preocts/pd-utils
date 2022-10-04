@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import pytest
 
 from pd_utils.model.base import Base
-from pd_utils.util import IOUtil
+from pd_utils.util import ioutil
 
 
 @dataclass
@@ -36,12 +36,12 @@ def mockmodel() -> tuple[list[MockModel], str]:
 
 def test_to_csv_string(mockmodel: tuple[list[MockModel], str]) -> None:
     sample, expected = mockmodel
-    result = IOUtil.to_csv_string(sample)
+    result = ioutil.to_csv_string(sample)
     assert result == expected
 
 
 def test_to_csv_string_empty() -> None:
-    result = IOUtil.to_csv_string([])
+    result = ioutil.to_csv_string([])
 
     assert result == ""
 
@@ -55,19 +55,19 @@ def test_to_csv_string_cstm_fieldnames(mockmodel: tuple[list[MockModel], str]) -
         "True,Test3\r\n"
         "False,Test4\r\n"
     )
-    result = IOUtil.to_csv_string(sample, ["flag", "name"])
+    result = ioutil.to_csv_string(sample, ["flag", "name"])
     assert result == expected
 
 
 def test_write_to_file_empty_file_does_nothing() -> None:
     # This will fail if an emtpy string is not early exited
-    IOUtil.write_to_file("", "")
+    ioutil.write_to_file("", "")
 
 
 def test_write_to_file(mock_filename: str) -> None:
     content = "This is a test."
 
-    IOUtil.write_to_file(mock_filename, content)
+    ioutil.write_to_file(mock_filename, content)
 
     with open(mock_filename) as infile:
         verify = infile.read()
@@ -80,7 +80,7 @@ def test_read_from_file(mock_filename: str) -> None:
     with open(mock_filename, "w") as outfile:
         outfile.write(content)
 
-    verify = IOUtil.read_from_file(mock_filename)
+    verify = ioutil.read_from_file(mock_filename)
 
     assert verify == content
 
@@ -92,6 +92,6 @@ def test_csv_to_dict() -> None:
         {"name": "test2", "value": "2"},
     ]
 
-    result = IOUtil.csv_to_dict(content)
+    result = ioutil.csv_to_dict(content)
 
     assert result == expected
