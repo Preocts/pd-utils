@@ -4,7 +4,7 @@ Command line handler for CoverageGapReport
 from __future__ import annotations
 
 from pd_utils.report import CoverageGapReport
-from pd_utils.util import DateTool
+from pd_utils.util import datetool
 from pd_utils.util import IOUtil
 from pd_utils.util import RuntimeInit
 
@@ -24,7 +24,7 @@ def main(*, _args: list[str] | None = None) -> int:
     client = CoverageGapReport(token=args.token, look_ahead_days=int(args.look_ahead))
     schedule_report, escalation_report = client.run_reports()
 
-    now = DateTool.utcnow_isotime().split("T")[0]
+    now = datetool.utcnow_isotime().split("T")[0]
     IOUtil.write_to_file(f"schedule_gap_report{now}.csv", schedule_report)
     IOUtil.write_to_file(f"escalation_rule_gap_report{now}.csv", escalation_report)
 

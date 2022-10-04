@@ -7,7 +7,7 @@ from typing import Any
 from typing import TypedDict
 
 from pd_utils.model import Incident
-from pd_utils.util import DateTool
+from pd_utils.util import datetool
 from pd_utils.util import IOUtil
 from pd_utils.util import PagerDutyAPI
 
@@ -100,7 +100,7 @@ class CloseOldIncidents:
         """Isolate old incidents from list of incidents."""
         old_incidents: list[Incident] = []
         for incident in incidents:
-            delta = DateTool.to_seconds(incident.created_at, NOW.isoformat())
+            delta = datetool.to_seconds(incident.created_at, NOW.isoformat())
 
             if delta > self._close_after_seconds:
                 old_incidents.append(incident)
@@ -130,7 +130,7 @@ class CloseOldIncidents:
                 self.log.info("Checking incident %s to %s", idx, idx + 100)
 
             lst_log = self._get_newest_log_entry(incident.incident_id)
-            seconds = DateTool.to_seconds(lst_log["created_at"], NOW.isoformat())
+            seconds = datetool.to_seconds(lst_log["created_at"], NOW.isoformat())
 
             if seconds > self._close_after_seconds:
                 self.log.debug("Incident %s has no activity", incident.incident_number)

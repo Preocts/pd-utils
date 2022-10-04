@@ -4,7 +4,7 @@ Command line handler for UserReport
 from __future__ import annotations
 
 from pd_utils.report import UserReport
-from pd_utils.util import DateTool
+from pd_utils.util import datetool
 from pd_utils.util import IOUtil
 from pd_utils.util import RuntimeInit
 
@@ -26,7 +26,7 @@ def main(_args: list[str] | None = None) -> int:
     print("Starting User Report, this pull can take some time.")
     report = UserReport(args.token).run_report(team_ids=args.team_ids)
 
-    now = DateTool.utcnow_isotime().split("T")[0]
+    now = datetool.utcnow_isotime().split("T")[0]
     IOUtil.write_to_file(f"user_report{now}.csv", report)
     print(f"Report saved to user_report{now}.csv")
 
