@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import Generator
+from collections.abc import Generator
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
