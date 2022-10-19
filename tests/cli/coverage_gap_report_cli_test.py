@@ -5,7 +5,7 @@ from unittest.mock import patch
 from pd_utils.cli import coverage_gap_report_cli
 
 
-def test_main():
+def test_main() -> None:
     with patch.object(
         coverage_gap_report_cli.CoverageGapReport, "run_reports"
     ) as mocked:

@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import pytest
 from httpx import Response
-
 from pd_utils.util import PagerDutyAPI
 
 INCIDENTS_RESP = Path("tests/fixture/close-incidents/incidents.json").read_text()

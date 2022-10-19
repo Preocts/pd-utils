@@ -9,7 +9,6 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
-
 from pd_utils.report import safelist_gatherer as pdip
 
 EU_SAMPLE = Path("tests/fixture/safelist_gatherer/sample_eu.json").read_text()

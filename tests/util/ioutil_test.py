@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytest
-
 from pd_utils.model.base import Base
 from pd_utils.util import ioutil
 
