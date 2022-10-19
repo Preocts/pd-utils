@@ -5,7 +5,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from pd_utils.model import ScheduleCoverage
 from pd_utils.model.escalation_rule_coverage import EscalationRuleCoverage
 from pd_utils.report.coverage_gap_report import CoverageGapReport
@@ -137,7 +136,7 @@ def test_map_schedule_coverages(search: CoverageGapReport) -> None:
 
     with patch.object(search, "get_schedule_coverage", side_effect=resps):
 
-        search._map_schedule_coverages(mock_ids)  # type: ignore
+        search._map_schedule_coverages(set(mock_ids))
 
     assert len(search._schedule_map) == 2
     assert "c" not in search._schedule_map

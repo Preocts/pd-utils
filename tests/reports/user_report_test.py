@@ -6,7 +6,6 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
-
 from pd_utils.model import UserReportRow
 from pd_utils.model import UserTeam
 from pd_utils.report.user_report import _Team
@@ -70,7 +69,7 @@ def test_get_users_and_teams(
     assert len(user_map) == expected_len
 
 
-def test_get_team_memberships(report: UserReport):
+def test_get_team_memberships(report: UserReport) -> None:
     resp = [json.loads(MEMBERS)]
 
     with patch.object(report._query, "query_iter", return_value=resp):
@@ -80,7 +79,7 @@ def test_get_team_memberships(report: UserReport):
     assert len(result) == len(EXPECTED_TEAMS)
 
 
-def test_hydrate_team_membership(report: UserReport):
+def test_hydrate_team_membership(report: UserReport) -> None:
     mock_map = {"PSIUGWW": UserReportRow.build_from(json.loads(USER))}
     mock_teams = [
         UserTeam("PSIUGWW", "PLNRGGS", "Egg Carton", "responder"),
@@ -107,7 +106,7 @@ def test_get_users_on_schedules(report: UserReport) -> None:
     assert result == EXPECTED_USERS
 
 
-def test_hydrate_on_schedule_flag(report: UserReport):
+def test_hydrate_on_schedule_flag(report: UserReport) -> None:
     mock_map = {
         "PSIUGWW": UserReportRow.build_from(json.loads(USER)),
         "PSIUGWX": UserReportRow.build_from(json.loads(USER)),

@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
-
 from pd_utils.util import datetool
 
 MOCK_NOW = datetime(2022, 12, 25, 13, 50, 30, 0)

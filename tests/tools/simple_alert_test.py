@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
-
 from pd_utils.tool import simple_alert
 
 
