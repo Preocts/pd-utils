@@ -15,6 +15,14 @@ install-dev:
 coverage:
 	tox -p
 
+.PHONY: docker-test
+docker-test:
+	docker rm -f pd-util-tester
+	docker rmi -f pd-util-test
+	docker build -f docker/docker-test-runner -t pd-util-test .
+	docker run -m 128m --name pd-util-tester pd-util-test
+	docker cp pd-util-tester:pd-utils/coverage.json .
+
 .PHONY: build-dist
 build-dist:
 	python -m pip install --upgrade build
