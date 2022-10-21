@@ -55,16 +55,8 @@ simple-alert = "pd_utils.tool.simple_alert:console_handler"
 close-old-incidents = "pd_utils.cli.close_old_incidents_cli:main"
 user-report = "pd_utils.cli.user_report_cli:main"
 
-# [tool.setuptools.packages.find]
-# where = ["src"]  # ["."] by default
-# include = ["*"]  # ["*"] by default
-# exclude = ["tests"]  # empty by default
-# namespaces = true  # true by default
-
-# This is optional. Package-data will be included in the build/install
-# [tool.setuptools.package-data]
-# "module_name" = ["py.typed"]
-# "module_name.sample_data" = ["*.csv"]
+[tool.setuptools.package-data]
+"pd_utils" = ["py.typed"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -82,22 +74,30 @@ disallow_untyped_defs = false
 
 [tool.coverage.run]
 branch = true
-source = [ "tests" ]
-source_pkgs = [ "pd_utils" ]
+source = [
+    "tests",
+]
+source_pkgs = [
+    "pd_utils",
+]
+
+[tool.coverage.paths]
+source = [
+    "src/",
+    "*/site-packages",
+]
+test = [
+    "tests/",
+    "*/tests",
+]
 
 [tool.coverage.report]
 exclude_lines =[
     "pragma: no cover",
     "raise NotImplementedError",
-    "if __name__ == .__main__.:"
+    "if __name__ == .__main__.:",
+    "\\.\\.\\.",
 ]
-ignore_errors = true
-
-[tool.coverage.html]
-directory = "coverage_html_report"
-
-[tool.coverage.xml]
-output = "coverage.xml"
 
 # This is ignored by flake8, here in case they decide to add it in the future
 [tool.flake8]
@@ -107,26 +107,26 @@ max-line-length = 88
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38,py39,py310,py311,pre-commit
+envlist = py38,py39,py310,py311,coverage,pre-commit
 skip_missing_interpreters = true
 isolated_build = True
 
 [testenv]
 deps = .[test]
 commands =
-    coverage erase
-    coverage run -m pytest {posargs:tests}
-    coverage xml
-    coverage report --fail-under 80 --skip-covered --skip-empty -m
+    coverage run -p -m pytest tests/
 
-[testenv:mypy]
-deps =
-    .
-    mypy
+[testenv:coverage]
+depends = py38,py39,py310,py311
+parallel_show_output = true
 commands =
-    mypy -p pd_utils
+    python -m coverage combine
+    python -m coverage report -m --fail-under=50
+    python -m coverage json
 
 [testenv:pre-commit]
+depends = coverage
+parallel_show_output = true
 skip_install = true
 deps = pre-commit
 commands = pre-commit run --all-files --show-diff-on-failure
