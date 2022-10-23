@@ -22,7 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "httpx>=0.23.0,<1",
-    "secretbox>=2.6.3,<3"
+    "runtime-yolk>=1.0.0,<2"
 ]
 
 [project.optional-dependencies]
