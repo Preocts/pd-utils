@@ -34,8 +34,8 @@ def main(args_in: list[str] | None = None) -> int:
     args = runtime.parse_args(args_in)
 
     client = CloseOldIncidents(
-        token=runtime.secrets.get("PAGERDUTY_TOKEN"),
-        email=runtime.secrets.get("PAGERDUTY_EMAIL"),
+        token=runtime.yolk.config.get("DEFAULT", "token"),
+        email=runtime.yolk.config.get("DEFAULT", "email"),
         close_after_days=int(args.close_after_days),
         close_active=args.close_active,
         close_priority=args.close_priority,

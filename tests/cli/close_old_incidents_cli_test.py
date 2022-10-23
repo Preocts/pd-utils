@@ -10,7 +10,6 @@ def test_main_no_optional_args() -> None:
     with patch.object(close_old_incidents_cli, "CloseOldIncidents") as mockclass:
         close_old_incidents_cli.main(["--token", "mock", "--email", "mock@mock.com"])
         kwargs = mockclass.call_args.kwargs
-        print(mockclass.call_args.kwargs)
 
     assert kwargs == {
         "token": "mock",
