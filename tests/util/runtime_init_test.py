@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+from unittest.mock import patch
 
 import pytest
 from _pytest.logging import LogCaptureFixture
@@ -17,9 +19,9 @@ def runtime() -> RuntimeInit:
 def test_init_secrets(runtime: RuntimeInit) -> None:
     runtime.init_secrets(ENV_FILE)
 
-    assert runtime.secrets.get("PAGERDUTY_TOKEN") == "token"
-    assert runtime.secrets.get("PAGERDUTY_EMAIL") == "email"
-    assert runtime.secrets.get("LOGGING_LEVEL") == "CRITICAL"
+    assert os.getenv("PAGERDUTY_TOKEN") == "token"
+    assert os.getenv("PAGERDUTY_EMAIL") == "email"
+    assert os.getenv("LOGGING_LEVEL") == "CRITICAL"
 
 
 def test_add_standard_arguments(runtime: RuntimeInit) -> None:
@@ -46,8 +48,9 @@ def test_init_logging(runtime: RuntimeInit, caplog: LogCaptureFixture) -> None:
     prior_level = logging.getLogger().level
     logger = logging.getLogger("init_logging")
     try:
-        runtime.secrets.set("LOGGING_LEVEL", "CRITICAL")
-        runtime.init_logging()
+
+        with patch.dict(os.environ, {"LOGGING_LEVEL": "CRITICAL"}):
+            runtime.init_logging()
 
         logger.error("error")
         logger.critical("critical")
@@ -67,13 +70,13 @@ def test_empty_parse_arg_results(runtime: RuntimeInit) -> None:
 
     assert args.token == ""
     assert args.email == ""
-    assert args.logging_level == "INFO"
+    assert args.logging_level == "ERROR"
 
 
 def test_environ_parse_arg_defaults(runtime: RuntimeInit) -> None:
-    runtime.secrets.set("PAGERDUTY_TOKEN", "TOKEN")
-    runtime.secrets.set("PAGERDUTY_EMAIL", "EMAIL")
-    runtime.secrets.set("LOGGING_LEVEL", "LOGGING_LEVEL")
+    runtime.yolk.config.set("DEFAULT", "token", "TOKEN")
+    runtime.yolk.config.set("DEFAULT", "email", "EMAIL")
+    runtime.yolk.config.set("DEFAULT", "logging_level", "LOGGING_LEVEL")
     runtime.add_standard_arguments()
 
     args = runtime.parse_args([])

@@ -3,16 +3,16 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 from collections.abc import Sequence
 
-from secretbox import SecretBox
-from secretbox.envfile_loader import EnvFileLoader
+from runtime_yolk import Yolk
 
 
 class RuntimeInit:
     def __init__(self, prog_name: str) -> None:
         """Setup runtime environment for all scripts."""
-        self.secrets = SecretBox()
+        self.yolk = Yolk()
         self.parser = argparse.ArgumentParser(
             prog=prog_name,
             description="Pagerduty command line utilities.",
@@ -26,11 +26,17 @@ class RuntimeInit:
         Args:
             env_file: The path to the file containing the secrets.
         """
-        self.secrets.use_loaders(EnvFileLoader(env_file))
+        self.yolk.load_env(env_file or ".env")
 
     def init_logging(self) -> None:
-        """Init logging level and format. (default: $LOGGING_LEVEL | INFO)"""
-        level = self.secrets.get("LOGGING_LEVEL", "INFO")
+        """Init logging level and format."""
+        level = os.getenv(
+            "LOGGING_LEVEL",
+            self.yolk.config.get(
+                "DEFAULT",
+                "logging_level",
+            ),
+        )
         logging.getLogger().setLevel(level)
         logging.basicConfig(
             level=level,
@@ -82,20 +88,24 @@ class RuntimeInit:
             self.parser.add_argument(
                 "--token",
                 help="PagerDuty API Token (default: $PAGERDUTY_TOKEN)",
-                default=self.secrets.get("PAGERDUTY_TOKEN", ""),
+                default=self.yolk.config.get("DEFAULT", "token", fallback=""),
             )
         if email:
             self.parser.add_argument(
                 "--email",
                 help="PagerDuty Email (default: $PAGERDUTY_EMAIL)",
-                default=self.secrets.get("PAGERDUTY_EMAIL", ""),
+                default=self.yolk.config.get("DEFAULT", "email", fallback=""),
             )
         if loglevel:
             self.parser.add_argument(
                 "--logging-level",
-                help="Logging level (default: $LOGGING_LEVEL | INFO)",
+                help="Logging level (default: $LOGGING_LEVEL | ERROR)",
                 choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                default=self.secrets.get("LOGGING_LEVEL", "INFO"),
+                default=self.yolk.config.get(
+                    "DEFAULT",
+                    "logging_level",
+                    fallback="ERROR",
+                ),
             )
 
     def parse_args(self, args: Sequence[str] | None = None) -> argparse.Namespace:
@@ -105,10 +115,10 @@ class RuntimeInit:
         )
         # Inject overrides to secrets if in parser
         if "token" in parsed:
-            self.secrets.set("PAGERDUTY_TOKEN", parsed.token)
+            self.yolk.config.set("DEFAULT", "token", parsed.token)
         if "email" in parsed:
-            self.secrets.set("PAGERDUTY_EMAIL", parsed.email)
+            self.yolk.config.set("DEFAULT", "email", parsed.email)
         if "logging_level" in parsed:
-            self.secrets.set("LOGGING_LEVEL", parsed.logging_level)
+            self.yolk.config.set("DEFAULT", "logging_level", parsed.logging_level)
 
         return parsed
