@@ -3,45 +3,28 @@ from __future__ import annotations
 
 import argparse
 import logging
-import os
 from collections.abc import Sequence
 
 from runtime_yolk import Yolk
 
 
 class RuntimeInit:
-    def __init__(self, prog_name: str) -> None:
+    def __init__(self, prog_name: str, *, _config_name: str = "pd-util") -> None:
         """Setup runtime environment for all scripts."""
         self.yolk = Yolk()
+        self.yolk.load_env()
+        self.yolk.load_config(_config_name)
+        self.yolk.set_logging()
+
         self.parser = argparse.ArgumentParser(
             prog=prog_name,
             description="Pagerduty command line utilities.",
             epilog="See: https://github.com/Preocts/pagerduty-utils",
         )
 
-    def init_secrets(self, env_file: str | None = None) -> None:
-        """
-        Initialize secrets from a file and environment.
-
-        Args:
-            env_file: The path to the file containing the secrets.
-        """
-        self.yolk.load_env(env_file or ".env")
-
-    def init_logging(self) -> None:
-        """Init logging level and format."""
-        level = os.getenv(
-            "LOGGING_LEVEL",
-            self.yolk.config.get(
-                "DEFAULT",
-                "logging_level",
-            ),
-        )
-        logging.getLogger().setLevel(level)
-        logging.basicConfig(
-            level=level,
-            format="%(asctime)s - %(levelname)s - %(module)s - %(message)s",
-        )
+    def get_logger(self) -> logging.Logger:
+        """Get the root logger."""
+        return self.yolk.get_logger()
 
     def add_argument(
         self,

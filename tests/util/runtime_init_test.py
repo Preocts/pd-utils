@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
+from collections.abc import Generator
+from configparser import NoOptionError
 from unittest.mock import patch
 
 import pytest
@@ -9,19 +11,47 @@ from _pytest.logging import LogCaptureFixture
 from pd_utils.util import RuntimeInit
 
 ENV_FILE = "tests/fixture/mockenv"
+INI_FILE = "tests/fixture/mock-pd-util"
+
+
+@pytest.fixture(autouse=True)
+def patch_environ() -> Generator[None, None, None]:
+    with patch.dict(os.environ, {}):
+        yield None
 
 
 @pytest.fixture
-def runtime() -> RuntimeInit:
-    return RuntimeInit("testing")
+def runtime() -> Generator[RuntimeInit, None, None]:
+    rt = RuntimeInit("testing", _config_name="testingonly")
+    rt.yolk.load_env(ENV_FILE)
+    rt.yolk.load_config(INI_FILE)
+    rt.yolk.set_logging()
+    yield rt
 
 
-def test_init_secrets(runtime: RuntimeInit) -> None:
-    runtime.init_secrets(ENV_FILE)
+@pytest.mark.usefixtures("runtime")
+def test_init_secrets() -> None:
 
     assert os.getenv("PAGERDUTY_TOKEN") == "token"
     assert os.getenv("PAGERDUTY_EMAIL") == "email"
     assert os.getenv("LOGGING_LEVEL") == "CRITICAL"
+
+
+def test_init_config(runtime: RuntimeInit) -> None:
+
+    assert runtime.yolk.config.get("DEFAULT", "logging_level") == "CRITICAL"
+    assert runtime.yolk.config.get("DEFAULT", "token") == "token"
+    assert runtime.yolk.config.get("DEFAULT", "email") == "email"
+
+
+def test_init_with_no_config() -> None:
+    # Run without loading mock files, assert things are as we assume
+    runtime = RuntimeInit("testing", _config_name="testingonly")
+    assert runtime.yolk.config.get("DEFAULT", "logging_level") == "ERROR"
+    with pytest.raises(NoOptionError):
+        assert runtime.yolk.config.get("DEFAULT", "token") == ""
+    with pytest.raises(NoOptionError):
+        assert runtime.yolk.config.get("DEFAULT", "email") == ""
 
 
 def test_add_standard_arguments(runtime: RuntimeInit) -> None:
@@ -45,12 +75,9 @@ def test_add_standard_arguments_toggled_off(runtime: RuntimeInit) -> None:
 
 
 def test_init_logging(runtime: RuntimeInit, caplog: LogCaptureFixture) -> None:
-    prior_level = logging.getLogger().level
-    logger = logging.getLogger("init_logging")
+    logger = logging.getLogger()
+    prior_level = logger.level
     try:
-
-        with patch.dict(os.environ, {"LOGGING_LEVEL": "CRITICAL"}):
-            runtime.init_logging()
 
         logger.error("error")
         logger.critical("critical")
@@ -68,9 +95,9 @@ def test_empty_parse_arg_results(runtime: RuntimeInit) -> None:
 
     args = runtime.parse_args([])
 
-    assert args.token == ""
-    assert args.email == ""
-    assert args.logging_level == "ERROR"
+    assert args.token == "token"
+    assert args.email == "email"
+    assert args.logging_level == "CRITICAL"
 
 
 def test_environ_parse_arg_defaults(runtime: RuntimeInit) -> None:
