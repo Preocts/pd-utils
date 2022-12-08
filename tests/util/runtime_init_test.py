@@ -5,6 +5,7 @@ import logging
 import pytest
 from _pytest.logging import LogCaptureFixture
 from pd_utils.util import RuntimeInit
+from pd_utils.util.pagerduty_api import PagerDutyAPI
 
 ENV_FILE = "tests/fixture/mockenv"
 
@@ -96,3 +97,25 @@ def test_add_arg(runtime: RuntimeInit) -> None:
     args = runtime.parse_args(["--TEST", "Hello"])
 
     assert args.TEST == "Hello"
+
+
+def test_get_pagerduty_connection(runtime: RuntimeInit) -> None:
+    runtime.init_secrets(ENV_FILE)
+    expected_auth = f'Token token={runtime.secrets.get("PAGERDUTY_TOKEN")}'
+    expected_email = runtime.secrets.get("PAGERDUTY_EMAIL")
+    result = runtime.get_pagerduty_connection()
+
+    assert isinstance(result, PagerDutyAPI)
+    assert result._http.headers["authorization"] == expected_auth
+    assert result._http.headers["from"] == expected_email
+
+
+def test_get_pagerduty_connection_override_args(runtime: RuntimeInit) -> None:
+    runtime.init_secrets(ENV_FILE)
+    expected_auth = "Token token=override_mock"
+    expected_email = "override_email"
+    result = runtime.get_pagerduty_connection("override_mock", "override_email", 1)
+
+    assert isinstance(result, PagerDutyAPI)
+    assert result._http.headers["authorization"] == expected_auth
+    assert result._http.headers["from"] == expected_email

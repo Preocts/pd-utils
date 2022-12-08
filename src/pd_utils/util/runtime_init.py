@@ -5,6 +5,7 @@ import argparse
 import logging
 from collections.abc import Sequence
 
+from pd_utils.util.pagerduty_api import PagerDutyAPI
 from secretbox import SecretBox
 from secretbox.envfile_loader import EnvFileLoader
 
@@ -118,5 +119,20 @@ class RuntimeInit:
             self.secrets.set("PAGERDUTY_EMAIL", parsed.email)
         if "logging_level" in parsed:
             self.secrets.set("LOGGING_LEVEL", parsed.logging_level)
+        if "timeout" in parsed:
+            self.secrets.set("PAGERDUTY_TIMEOUT", str(parsed.timeout))
 
         return parsed
+
+    def get_pagerduty_connection(
+        self,
+        token: str | None = None,
+        email: str | None = None,
+        timeout: int | None = None,
+    ) -> PagerDutyAPI:
+        _timeout = self.secrets.get("PAGERDUTY_TIMEOUT", "None")
+        return PagerDutyAPI(
+            token=token or self.secrets.get("PAGERDUTY_TOKEN", ""),
+            email=email or self.secrets.get("PAGERDUTY_EMAIL", "") or None,
+            timeout_seconds=timeout or int(_timeout) if _timeout != "None" else None,
+        )
