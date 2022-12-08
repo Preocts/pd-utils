@@ -3,8 +3,21 @@ from __future__ import annotations
 import os
 import tempfile
 from collections.abc import Generator
+from unittest.mock import patch
 
 import pytest
+
+MOCK_ENV = {
+    "PAGERDUTY_TOKEN": "mock",
+    "PAGERDUTY_EMAIL": "mock",
+    "PAGERDUTY_TIMEOUT": "42",
+}
+
+
+@pytest.fixture(autouse=True)
+def mock_environment_variables() -> Generator[None, None, None]:
+    with patch.dict(os.environ, MOCK_ENV):
+        yield None
 
 
 @pytest.fixture

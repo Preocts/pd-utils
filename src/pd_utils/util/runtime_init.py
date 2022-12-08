@@ -5,6 +5,7 @@ import argparse
 import logging
 from collections.abc import Sequence
 
+from pd_utils.util.pagerduty_api import PagerDutyAPI
 from secretbox import SecretBox
 from secretbox.envfile_loader import EnvFileLoader
 
@@ -29,8 +30,8 @@ class RuntimeInit:
         self.secrets.use_loaders(EnvFileLoader(env_file))
 
     def init_logging(self) -> None:
-        """Init logging level and format. (default: $LOGGING_LEVEL | INFO)"""
-        level = self.secrets.get("LOGGING_LEVEL", "INFO")
+        """Init logging level and format. (default: $LOGGING_LEVEL | ERROR)"""
+        level = self.secrets.get("LOGGING_LEVEL", "ERROR")
         logging.getLogger().setLevel(level)
         logging.basicConfig(
             level=level,
@@ -69,6 +70,7 @@ class RuntimeInit:
         token: bool = True,
         email: bool = True,
         loglevel: bool = True,
+        timeout: bool = True,
     ) -> None:
         """
         Add most common command line arguments to the parser.
@@ -77,6 +79,7 @@ class RuntimeInit:
             token: When true collects optional API token
             email: When true collects optional PagerDuty account email
             loglevel: When true collects optional logging level
+            timeout: Timeout seconds for HTTP calls
         """
         if token:
             self.parser.add_argument(
@@ -93,9 +96,15 @@ class RuntimeInit:
         if loglevel:
             self.parser.add_argument(
                 "--logging-level",
-                help="Logging level (default: $LOGGING_LEVEL | INFO)",
+                help="Logging level (default: $LOGGING_LEVEL | ERROR)",
                 choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                default=self.secrets.get("LOGGING_LEVEL", "INFO"),
+                default=self.secrets.get("LOGGING_LEVEL", "ERROR"),
+            )
+        if timeout:
+            self.parser.add_argument(
+                "--timeout",
+                help="Timeout seconds for HTTP calls (default: 60)",
+                default=60,
             )
 
     def parse_args(self, args: Sequence[str] | None = None) -> argparse.Namespace:
@@ -110,5 +119,20 @@ class RuntimeInit:
             self.secrets.set("PAGERDUTY_EMAIL", parsed.email)
         if "logging_level" in parsed:
             self.secrets.set("LOGGING_LEVEL", parsed.logging_level)
+        if "timeout" in parsed:
+            self.secrets.set("PAGERDUTY_TIMEOUT", str(parsed.timeout))
 
         return parsed
+
+    def get_pagerduty_connection(
+        self,
+        token: str | None = None,
+        email: str | None = None,
+        timeout: int | None = None,
+    ) -> PagerDutyAPI:
+        _timeout = self.secrets.get("PAGERDUTY_TIMEOUT", "None")
+        return PagerDutyAPI(
+            token=token or self.secrets.get("PAGERDUTY_TOKEN", ""),
+            email=email or self.secrets.get("PAGERDUTY_EMAIL", "") or None,
+            timeout_seconds=timeout or int(_timeout) if _timeout != "None" else None,
+        )

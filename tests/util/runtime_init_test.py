@@ -5,6 +5,7 @@ import logging
 import pytest
 from _pytest.logging import LogCaptureFixture
 from pd_utils.util import RuntimeInit
+from pd_utils.util.pagerduty_api import PagerDutyAPI
 
 ENV_FILE = "tests/fixture/mockenv"
 
@@ -27,19 +28,26 @@ def test_add_standard_arguments(runtime: RuntimeInit) -> None:
 
     args = runtime.parse_args([])
 
-    assert "token" in args
-    assert "email" in args
-    assert "logging_level" in args
+    assert "token" in args and args.token == ""
+    assert "email" in args and args.email == ""
+    assert "logging_level" in args and args.logging_level == "ERROR"
+    assert "timeout" in args and args.timeout == 60
 
 
 def test_add_standard_arguments_toggled_off(runtime: RuntimeInit) -> None:
-    runtime.add_standard_arguments(token=False, email=False, loglevel=False)
+    runtime.add_standard_arguments(
+        token=False,
+        email=False,
+        loglevel=False,
+        timeout=False,
+    )
 
     args = runtime.parse_args([])
 
     assert "token" not in args
     assert "email" not in args
     assert "logging_level" not in args
+    assert "timeout" not in args
 
 
 def test_init_logging(runtime: RuntimeInit, caplog: LogCaptureFixture) -> None:
@@ -58,16 +66,6 @@ def test_init_logging(runtime: RuntimeInit, caplog: LogCaptureFixture) -> None:
 
     assert "error" not in caplog.text
     assert "critical" in caplog.text
-
-
-def test_empty_parse_arg_results(runtime: RuntimeInit) -> None:
-    runtime.add_standard_arguments()
-
-    args = runtime.parse_args([])
-
-    assert args.token == ""
-    assert args.email == ""
-    assert args.logging_level == "INFO"
 
 
 def test_environ_parse_arg_defaults(runtime: RuntimeInit) -> None:
@@ -99,3 +97,25 @@ def test_add_arg(runtime: RuntimeInit) -> None:
     args = runtime.parse_args(["--TEST", "Hello"])
 
     assert args.TEST == "Hello"
+
+
+def test_get_pagerduty_connection(runtime: RuntimeInit) -> None:
+    runtime.init_secrets(ENV_FILE)
+    expected_auth = f'Token token={runtime.secrets.get("PAGERDUTY_TOKEN")}'
+    expected_email = runtime.secrets.get("PAGERDUTY_EMAIL")
+    result = runtime.get_pagerduty_connection()
+
+    assert isinstance(result, PagerDutyAPI)
+    assert result._http.headers["authorization"] == expected_auth
+    assert result._http.headers["from"] == expected_email
+
+
+def test_get_pagerduty_connection_override_args(runtime: RuntimeInit) -> None:
+    runtime.init_secrets(ENV_FILE)
+    expected_auth = "Token token=override_mock"
+    expected_email = "override_email"
+    result = runtime.get_pagerduty_connection("override_mock", "override_email", 1)
+
+    assert isinstance(result, PagerDutyAPI)
+    assert result._http.headers["authorization"] == expected_auth
+    assert result._http.headers["from"] == expected_email

@@ -10,6 +10,7 @@ from pd_utils.model import Incident
 from pd_utils.tool import close_old_incidents
 from pd_utils.tool.close_old_incidents import CloseOldIncidents
 from pd_utils.util import datetool
+from pd_utils.util.pagerduty_api import PagerDutyAPI
 
 INCIDENTS_RESP = Path("tests/fixture/close-incidents/incidents.json").read_text()
 EXPECTED_IDS = {"Q36LM3UBN4V94O", "Q3YH44AL350A23"}
@@ -31,7 +32,7 @@ MOCK_REPORT = "\n".join(
 
 @pytest.fixture
 def closer() -> CloseOldIncidents:
-    return CloseOldIncidents("mock", "mock")
+    return CloseOldIncidents(PagerDutyAPI("", "", 1))
 
 
 @pytest.fixture

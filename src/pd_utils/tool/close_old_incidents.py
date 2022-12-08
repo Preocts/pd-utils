@@ -33,8 +33,7 @@ class CloseOldIncidents:
 
     def __init__(
         self,
-        token: str,
-        email: str,
+        pagerduty_connection: PagerDutyAPI,
         *,
         close_after_days: int = 10,
         close_active: bool = False,
@@ -44,14 +43,13 @@ class CloseOldIncidents:
         Used to clean up and close old incidents in PagerDuty.
 
         Args:
-            token: API v2 read/write token for PagerDuty
-            email: Valid PagerDuty account email with permissions for closing incidents
+            pagerduty_connection: PagerDutyAPI object to use
             close_after_days: Incidents older than this are considered for closing
             close_after: When true, old incidents are closed regardless of activity
             close_priority: When true, consider incidents with priority for closing
         """
 
-        self._pdapi = PagerDutyAPI(token, email)
+        self._pdapi = pagerduty_connection
         self._max_query_limit = 100
         self._close_after_seconds = close_after_days * 86_400
         self._close_active = close_active

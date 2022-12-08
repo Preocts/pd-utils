@@ -21,15 +21,14 @@ class CoverageGapReport:
 
     def __init__(
         self,
-        token: str,
+        pagerduty_connection: PagerDutyAPI,
         *,
         max_query_limit: int = 100,
         look_ahead_days: int = 14,
     ) -> None:
         """
-        Required: PagerDuty API v2 token with read access.
-
         Args:
+            pagerduty_connection: PagerDutyAPI object
             max_query_limit: Number of objects to request at once from PD (max: 100)
             look_ahead_days: Number of days to look ahead on schedule (default: 14)
         """
@@ -39,7 +38,7 @@ class CoverageGapReport:
         self._schedule_map: dict[str, SchCoverage] = {}
         self._escalation_map: dict[str, EscCoverage] = {}
 
-        self._query = PagerDutyAPI(token)
+        self._query = pagerduty_connection
 
     def run_reports(self) -> tuple[str, str]:
         """

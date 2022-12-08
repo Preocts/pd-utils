@@ -55,7 +55,7 @@ instance. These will be called out and can be provided with the `--email` flag,
 in an `.env` file under `PAGERDUTY_EMAIL`, or in the environ under the same
 name.
 
-All scripts accept the `--logging-level` flag which defaults to `INFO`.
+All scripts accept the `--logging-level` flag which defaults to `ERROR`.
 
 All scripts can be run from the installed shell scripts or by invoking directly
 with `python -m pd_utils.script_name`
@@ -114,7 +114,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
   --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                        Logging level (default: $LOGGING_LEVEL | INFO)
+                        Logging level (default: $LOGGING_LEVEL | ERROR)
   --team_ids [TEAM_IDS [TEAM_IDS ...]]
                         List of team ids to include in report.
 
@@ -148,7 +148,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
   --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                        Logging level (default: $LOGGING_LEVEL | INFO)
+                        Logging level (default: $LOGGING_LEVEL | ERROR)
   --look-ahead LOOK_AHEAD
                         Number of days to look ahead for gaps, default 14
 
@@ -216,7 +216,7 @@ optional arguments:
   --token TOKEN         PagerDuty API Token (default: $PAGERDUTY_TOKEN)
   --email EMAIL         PagerDuty Email (default: $PAGERDUTY_EMAIL)
   --logging-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                        Logging level (default: $LOGGING_LEVEL | INFO)
+                        Logging level (default: $LOGGING_LEVEL | ERROR)
   --inputfile INPUTFILE
                         Provide a csv file to work from. If not provided a new file will be created.
   --close-after-days CLOSE_AFTER_DAYS

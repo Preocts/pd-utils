@@ -17,15 +17,21 @@ class PagerDutyAPI:
     class QueryError(Exception):
         ...
 
-    def __init__(self, token: str, email: str | None = None) -> None:
-        """Initilize httpx client for queries to list endpoints."""
+    def __init__(
+        self,
+        token: str,
+        email: str | None = None,
+        timeout_seconds: int | None = None,
+    ) -> None:
+        """Initilize httpx client for queries to list endpoints. Timeout default 60s."""
+        timeout = timeout_seconds if timeout_seconds is not None else 60
         headers = {
             "Accept": "application/vnd.pagerduty+json;version=2",
             "Authorization": f"Token token={token}",
         }
         headers.update({"From": email} if email else {})
 
-        self._http = httpx.Client(headers=headers)
+        self._http = httpx.Client(headers=headers, timeout=timeout)
         self._params: dict[str, Any] = {}
         self._route: str | None = None
         self._object_name: str | None = None
