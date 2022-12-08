@@ -29,8 +29,8 @@ class RuntimeInit:
         self.secrets.use_loaders(EnvFileLoader(env_file))
 
     def init_logging(self) -> None:
-        """Init logging level and format. (default: $LOGGING_LEVEL | INFO)"""
-        level = self.secrets.get("LOGGING_LEVEL", "INFO")
+        """Init logging level and format. (default: $LOGGING_LEVEL | ERROR)"""
+        level = self.secrets.get("LOGGING_LEVEL", "ERROR")
         logging.getLogger().setLevel(level)
         logging.basicConfig(
             level=level,
@@ -93,9 +93,9 @@ class RuntimeInit:
         if loglevel:
             self.parser.add_argument(
                 "--logging-level",
-                help="Logging level (default: $LOGGING_LEVEL | INFO)",
+                help="Logging level (default: $LOGGING_LEVEL | ERROR)",
                 choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                default=self.secrets.get("LOGGING_LEVEL", "INFO"),
+                default=self.secrets.get("LOGGING_LEVEL", "ERROR"),
             )
 
     def parse_args(self, args: Sequence[str] | None = None) -> argparse.Namespace:

@@ -60,16 +60,6 @@ def test_init_logging(runtime: RuntimeInit, caplog: LogCaptureFixture) -> None:
     assert "critical" in caplog.text
 
 
-def test_empty_parse_arg_results(runtime: RuntimeInit) -> None:
-    runtime.add_standard_arguments()
-
-    args = runtime.parse_args([])
-
-    assert args.token == ""
-    assert args.email == ""
-    assert args.logging_level == "INFO"
-
-
 def test_environ_parse_arg_defaults(runtime: RuntimeInit) -> None:
     runtime.secrets.set("PAGERDUTY_TOKEN", "TOKEN")
     runtime.secrets.set("PAGERDUTY_EMAIL", "EMAIL")
