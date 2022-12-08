@@ -33,9 +33,13 @@ def main(args_in: list[str] | None = None) -> int:
     runtime.init_logging()
     args = runtime.parse_args(args_in)
 
-    client = CloseOldIncidents(
+    pdconn = runtime.get_pagerduty_connection(
         token=runtime.secrets.get("PAGERDUTY_TOKEN"),
         email=runtime.secrets.get("PAGERDUTY_EMAIL"),
+    )
+
+    client = CloseOldIncidents(
+        pagerduty_connection=pdconn,
         close_after_days=int(args.close_after_days),
         close_active=args.close_active,
         close_priority=args.close_priority,

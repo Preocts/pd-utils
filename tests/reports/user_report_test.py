@@ -10,6 +10,7 @@ from pd_utils.model import UserReportRow
 from pd_utils.model import UserTeam
 from pd_utils.report.user_report import _Team
 from pd_utils.report.user_report import UserReport
+from pd_utils.util.pagerduty_api import PagerDutyAPI
 
 USER = Path("tests/fixture/user_report/user.json").read_text()
 MEMBERS = Path("tests/fixture/user_report/members.json").read_text()
@@ -23,7 +24,7 @@ EXPECTED_USERS = {"PSIUGWW", "PSIUGWX"}
 
 @pytest.fixture
 def report() -> UserReport:
-    return UserReport("mock")
+    return UserReport(PagerDutyAPI("", "", 1))
 
 
 def test_run_report(report: UserReport) -> None:

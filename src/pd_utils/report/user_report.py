@@ -23,14 +23,18 @@ class UserReport:
 
     log = logging.getLogger()
 
-    def __init__(self, token: str, *, max_query_limit: int = 100) -> None:
+    def __init__(
+        self,
+        pagerduty_connection: PagerDutyAPI,
+        *,
+        max_query_limit: int = 100,
+    ) -> None:
         """
-        Required: PagerDuty API v2 token with read access.
-
         Args:
+            pagerduty_connection: PagerDutyAPI object to use
             max_query_limit: Number of objects to request at once from PD (max: 100)
         """
-        self._query = PagerDutyAPI(token)
+        self._query = pagerduty_connection
         self._max_query_limit = max_query_limit
 
     def run_report(self, team_ids: list[str] | None = None) -> str:

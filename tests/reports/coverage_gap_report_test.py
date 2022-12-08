@@ -8,6 +8,7 @@ import pytest
 from pd_utils.model import ScheduleCoverage
 from pd_utils.model.escalation_rule_coverage import EscalationRuleCoverage
 from pd_utils.report.coverage_gap_report import CoverageGapReport
+from pd_utils.util.pagerduty_api import PagerDutyAPI
 
 SCHEDULES_RESP = Path("tests/fixture/cov_gap/schedule_list.json").read_text()
 EXPECTED_IDS = {"PG3MDI8", "P4TPEME"}
@@ -21,7 +22,8 @@ EP_EXPECTED_COUNT = 2
 
 @pytest.fixture
 def search() -> CoverageGapReport:
-    return CoverageGapReport("mock", max_query_limit=1, look_ahead_days=14)
+    pdconn = PagerDutyAPI("", "", 1)
+    return CoverageGapReport(pdconn, max_query_limit=1, look_ahead_days=14)
 
 
 @pytest.fixture

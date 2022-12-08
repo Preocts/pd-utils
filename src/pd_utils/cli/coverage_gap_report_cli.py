@@ -21,7 +21,15 @@ def main(*, _args: list[str] | None = None) -> int:
         help_="Number of days to look ahead for gaps, default 14",
     )
     args = runtime.parse_args(_args)
-    client = CoverageGapReport(token=args.token, look_ahead_days=int(args.look_ahead))
+
+    pdconn = runtime.get_pagerduty_connection(
+        token=runtime.secrets.get("PAGERDUTY_TOKEN"),
+    )
+
+    client = CoverageGapReport(
+        pagerduty_connection=pdconn,
+        look_ahead_days=int(args.look_ahead),
+    )
     schedule_report, escalation_report = client.run_reports()
 
     now = datetool.utcnow_isotime().split("T")[0]

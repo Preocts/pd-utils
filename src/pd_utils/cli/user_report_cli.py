@@ -23,8 +23,12 @@ def main(_args: list[str] | None = None) -> int:
     args = runtime.parse_args(_args)
     runtime.init_logging()
 
+    pdconn = runtime.get_pagerduty_connection(
+        token=runtime.secrets.get("PAGERDUTY_TOKEN"),
+    )
+
     print("Starting User Report, this pull can take some time.")
-    report = UserReport(args.token).run_report(team_ids=args.team_ids)
+    report = UserReport(pdconn).run_report(team_ids=args.team_ids)
 
     now = datetool.utcnow_isotime().split("T")[0]
     ioutil.write_to_file(f"user_report{now}.csv", report)
