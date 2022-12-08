@@ -69,6 +69,7 @@ class RuntimeInit:
         token: bool = True,
         email: bool = True,
         loglevel: bool = True,
+        timeout: bool = True,
     ) -> None:
         """
         Add most common command line arguments to the parser.
@@ -77,6 +78,7 @@ class RuntimeInit:
             token: When true collects optional API token
             email: When true collects optional PagerDuty account email
             loglevel: When true collects optional logging level
+            timeout: Timeout seconds for HTTP calls
         """
         if token:
             self.parser.add_argument(
@@ -96,6 +98,12 @@ class RuntimeInit:
                 help="Logging level (default: $LOGGING_LEVEL | ERROR)",
                 choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                 default=self.secrets.get("LOGGING_LEVEL", "ERROR"),
+            )
+        if timeout:
+            self.parser.add_argument(
+                "--timeout",
+                help="Timeout seconds for HTTP calls (default: 60)",
+                default=60,
             )
 
     def parse_args(self, args: Sequence[str] | None = None) -> argparse.Namespace:

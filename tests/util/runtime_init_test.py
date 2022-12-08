@@ -27,19 +27,26 @@ def test_add_standard_arguments(runtime: RuntimeInit) -> None:
 
     args = runtime.parse_args([])
 
-    assert "token" in args
-    assert "email" in args
-    assert "logging_level" in args
+    assert "token" in args and args.token == ""
+    assert "email" in args and args.email == ""
+    assert "logging_level" in args and args.logging_level == "ERROR"
+    assert "timeout" in args and args.timeout == 60
 
 
 def test_add_standard_arguments_toggled_off(runtime: RuntimeInit) -> None:
-    runtime.add_standard_arguments(token=False, email=False, loglevel=False)
+    runtime.add_standard_arguments(
+        token=False,
+        email=False,
+        loglevel=False,
+        timeout=False,
+    )
 
     args = runtime.parse_args([])
 
     assert "token" not in args
     assert "email" not in args
     assert "logging_level" not in args
+    assert "timeout" not in args
 
 
 def test_init_logging(runtime: RuntimeInit, caplog: LogCaptureFixture) -> None:
