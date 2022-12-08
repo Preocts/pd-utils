@@ -8,7 +8,6 @@ from pd_utils.util import RuntimeInit
 def main(args_in: list[str] | None = None) -> int:
     """Run the script."""
     runtime = RuntimeInit("close-old-incidents")
-    runtime.init_secrets()
     runtime.add_standard_arguments()
     runtime.add_argument(
         "--inputfile",
@@ -30,7 +29,6 @@ def main(args_in: list[str] | None = None) -> int:
         action="store_true",
         help="When present, consider incidents with priority for closing",
     )
-    runtime.init_logging()
     args = runtime.parse_args(args_in)
 
     client = CloseOldIncidents(

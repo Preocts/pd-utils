@@ -12,7 +12,6 @@ from pd_utils.util import RuntimeInit
 def main(_args: list[str] | None = None) -> int:
     """Main point of entry for CLI."""
     runtime = RuntimeInit("user-report")
-    runtime.init_secrets()
     runtime.add_standard_arguments(email=False)
     runtime.add_argument(
         flag="--team_ids",
@@ -21,7 +20,6 @@ def main(_args: list[str] | None = None) -> int:
         nargs="*",
     )
     args = runtime.parse_args(_args)
-    runtime.init_logging()
 
     print("Starting User Report, this pull can take some time.")
     report = UserReport(args.token).run_report(team_ids=args.team_ids)

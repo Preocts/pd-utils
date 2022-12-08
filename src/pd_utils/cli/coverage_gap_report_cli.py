@@ -12,8 +12,6 @@ from pd_utils.util import RuntimeInit
 def main(*, _args: list[str] | None = None) -> int:
     """CLI entry."""
     runtime = RuntimeInit("coverage-gap-report")
-    runtime.init_secrets()
-    runtime.init_logging()
     runtime.add_standard_arguments(email=False)
     runtime.add_argument(
         flag="--look-ahead",
